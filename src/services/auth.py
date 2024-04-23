@@ -9,9 +9,9 @@ from sqlalchemy.orm import Session
 import redis as redis
 import pickle
 
-from project.conf.config import settings
-from project.database.db import get_db
-from project.repository import users as repository_users
+from src.conf.config import settings
+from src.database.db import get_db
+from src.repository import users as repository_users
 from schemas import UserOut
 
 

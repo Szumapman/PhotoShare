@@ -3,8 +3,8 @@ from redis.asyncio import Redis
 from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 
-from project.conf.config import settings
-from project.routes import auth, users
+from src.conf.config import settings
+from src.routes import auth, users
 import uvicorn
 from dotenv import load_dotenv
 
