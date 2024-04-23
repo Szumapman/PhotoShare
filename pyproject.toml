@@ -20,6 +20,7 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 redis = "^5.0.4"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 fastapi-mail = "^1.4.1"
+cloudinary = "^1.40.0"
 
 
 [tool.poetry.group.dev.dependencies]

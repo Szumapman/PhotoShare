@@ -14,3 +14,4 @@ libgravatar
 python-jose[cryptography]
 passlib[bcrypt]
 fastapi-mail
+cloudinary
