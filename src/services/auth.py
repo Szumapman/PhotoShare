@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 import redis as redis
 import pickle
+import bcrypt
 
 from src.conf.config import settings
 from src.database.db import get_db
@@ -46,11 +47,13 @@ class Auth:
 
     def verify_password(self, plain_password, hashed_password):
         """Verify if the plain password matches the hashed password."""
-        return self.pwd_context.verify(plain_password, hashed_password)
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+        )
 
     def get_password_hash(self, password: str):
         """Hash the provided password."""
-        return self.pwd_context.hash(password)
+        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     async def create_access_token(
         self, data: dict, expires_delta: Optional[float] = None
