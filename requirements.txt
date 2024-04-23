@@ -1,6 +1,10 @@
+uvicorn
 fastapi
-uvicorn[standard]
-sqlalchemy
-psycopg2-binary
+redis
+python-dotenv
+SQLAlchemy
+cloudinary
+passlib
+pydantic
+libgravatar
 alembic
-pydantic-settings
