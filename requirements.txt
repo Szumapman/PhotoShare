@@ -12,3 +12,5 @@ pydantic[email]
 python-multipart
 libgravatar
 python-jose[cryptography]
+passlib[bcrypt]
+fastapi-mail
