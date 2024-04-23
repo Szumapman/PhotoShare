@@ -12,11 +12,11 @@ import pickle
 from src.conf.config import settings
 from src.database.db import get_db
 from src.repository import users as repository_users
-from schemas import UserOut
+from src.schemas import UserOut
 
 
 class Auth:
-    '''
+    """
     Utility class for handling authentication-related operations.
 
     Attributes:
@@ -36,8 +36,8 @@ class Auth:
         create_email_token(data): Generate a token for email verification.
         get_email_from_token(token): Decode the provided token and return the associated email.
 
-    '''
-    
+    """
+
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     SECRET_KEY = settings.secret_key
     ALGORITHM = settings.algorithm
@@ -52,42 +52,62 @@ class Auth:
         """Hash the provided password."""
         return self.pwd_context.hash(password)
 
-
-    async def create_access_token(self, data: dict, expires_delta: Optional[float] = None):
+    async def create_access_token(
+        self, data: dict, expires_delta: Optional[float] = None
+    ):
         """Generate an access token for the provided data."""
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
             expire = datetime.utcnow() + timedelta(minutes=15)
-        to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"})
-        encoded_access_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        to_encode.update(
+            {"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"}
+        )
+        encoded_access_token = jwt.encode(
+            to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM
+        )
         return encoded_access_token
 
-
-    async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
+    async def create_refresh_token(
+        self, data: dict, expires_delta: Optional[float] = None
+    ):
         """Generate a refresh token for the provided data."""
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
             expire = datetime.utcnow() + timedelta(days=7)
-        to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"})
-        encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        to_encode.update(
+            {"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"}
+        )
+        encoded_refresh_token = jwt.encode(
+            to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM
+        )
         return encoded_refresh_token
 
     async def decode_refresh_token(self, refresh_token: str):
         """Decode the provided refresh token and return the associated email."""
         try:
-            payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            if payload['scope'] == 'refresh_token':
-                email = payload['sub']
+            payload = jwt.decode(
+                refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM]
+            )
+            if payload["scope"] == "refresh_token":
+                email = payload["sub"]
                 return email
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid scope for token')
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid scope for token",
+            )
         except JWTError:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
-    async def get_current_user(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> UserOut:
+    async def get_current_user(
+        self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    ) -> UserOut:
         """Get the currently authenticated user based on the provided access token."""
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -97,7 +117,7 @@ class Auth:
 
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            if payload['scope'] == 'access_token':
+            if payload["scope"] == "access_token":
                 email = payload["sub"]
                 if email is None:
                     raise credentials_exception
@@ -106,7 +126,7 @@ class Auth:
         except JWTError as e:
             raise credentials_exception
         user = self.r.get(f"user:{email}")
-        if user is None:       
+        if user is None:
             user = await repository_users.get_user_by_email(email, db)
             if user is None:
                 raise credentials_exception
@@ -115,7 +135,7 @@ class Auth:
         else:
             user = pickle.loads(user)
         return user
-        
+
     def create_email_token(self, data: dict):
         """Generate a token for email verification."""
         to_encode = data.copy()
@@ -125,15 +145,17 @@ class Auth:
         return token
 
     async def get_email_from_token(self, token: str):
-      """Decode the provided token and return the associated email."""
-      try:
-          payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-          email = payload["sub"]
-          return email
-      except JWTError as e:
-          print(e)
-          raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                              detail="Invalid token for email verification")
+        """Decode the provided token and return the associated email."""
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            email = payload["sub"]
+            return email
+        except JWTError as e:
+            print(e)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid token for email verification",
+            )
 
 
 auth_service = Auth()

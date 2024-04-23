@@ -10,14 +10,14 @@ from src.database.models import User
 from src.repository import users as repository_users
 from src.services.auth import auth_service, Auth
 from src.conf.config import settings
-from schemas import UserOut
+from src.schemas import UserOut
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/me", response_model=UserOut)
 async def read_users_me(current_user: User = Depends(auth_service.get_current_user)):
-    '''
+    """
     Retrieve the details of the currently authenticated user.
 
     Args:
@@ -25,15 +25,18 @@ async def read_users_me(current_user: User = Depends(auth_service.get_current_us
 
     Returns:
         UserOut: Details of the currently authenticated user.
-    '''
+    """
 
     return current_user
 
 
-@router.patch('/avatar', response_model=UserOut)
-async def update_avatar_user(file: UploadFile = File(), current_user: User = Depends(auth_service.get_current_user),
-                             db: Session = Depends(get_db)):
-    '''
+@router.patch("/avatar", response_model=UserOut)
+async def update_avatar_user(
+    file: UploadFile = File(),
+    current_user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
     Update the avatar for the currently authenticated user.
 
     Args:
@@ -43,18 +46,21 @@ async def update_avatar_user(file: UploadFile = File(), current_user: User = Dep
 
     Returns:
         UserOut: The updated details of the currently authenticated user.
-    '''
-    
+    """
+
     cloudinary.config(
         cloud_name=settings.cloudinary_name,
         api_key=settings.cloudinary_api_key,
         api_secret=settings.cloudinary_api_secret,
-        secure=True
+        secure=True,
     )
 
-    r = cloudinary.uploader.upload(file.file, public_id=f'PhotoShareApp/{current_user.username}', overwrite=True)
-    src_url = cloudinary.CloudinaryImage(f'PhotoShareApp/{current_user.username}')\
-                        .build_url(width=250, height=250, crop='fill', version=r.get('version'))
+    r = cloudinary.uploader.upload(
+        file.file, public_id=f"PhotoShareApp/{current_user.username}", overwrite=True
+    )
+    src_url = cloudinary.CloudinaryImage(
+        f"PhotoShareApp/{current_user.username}"
+    ).build_url(width=250, height=250, crop="fill", version=r.get("version"))
     user = await repository_users.update_avatar(current_user.email, src_url, db)
     Auth.r.set(f"user:{user.email}", pickle.dumps(user))
     return user
