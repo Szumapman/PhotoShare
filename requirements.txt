@@ -9,3 +9,5 @@ pydantic
 libgravatar
 alembic
 pydantic[email]
+python-multipart
+libgravatar
