@@ -8,3 +8,4 @@ passlib
 pydantic
 libgravatar
 alembic
+pydantic[email]
