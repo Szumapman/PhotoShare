@@ -21,6 +21,7 @@ redis = "^5.0.4"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 fastapi-mail = "^1.4.1"
 cloudinary = "^1.40.0"
+bcrypt = "^4.1.2"
 
 
 [tool.poetry.group.dev.dependencies]
