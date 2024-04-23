@@ -11,3 +11,4 @@ alembic
 pydantic[email]
 python-multipart
 libgravatar
+python-jose[cryptography]
