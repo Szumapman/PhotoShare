@@ -41,12 +41,6 @@ async def signup(
         HTTPException: If there is a conflict with an existing account or an internal server error occurs.
 
     """
-    existing_users_count = await repository_users.count_users(db)
-    if existing_users_count == 0:
-        body.role = "admin"
-    else:
-        body.role = "standard"
-
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
         raise HTTPException(
@@ -68,7 +62,14 @@ async def signup(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error while saving user to database",
         )
-    return UserOut(id=new_user.id, username=new_user.username, email=new_user.email)
+    return UserOut(
+        id=new_user.id,
+        username=new_user.username,
+        password=new_user.password,
+        email=new_user.email,
+        role=new_user.role,
+        avatar=new_user.avatar,
+    )
 
 
 @router.post("/login", response_model=TokenModel)
