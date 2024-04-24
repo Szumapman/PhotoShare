@@ -1,5 +1,6 @@
 from libgravatar import Gravatar
 from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
 
 from src.database.models import User
 from src.schemas import UserIn, UserOut
@@ -20,8 +21,13 @@ async def get_user_by_email(email: str, db: Session) -> UserOut:
     Returns:
         UserOut: The user retrieved from the database.
     """
-
-    return db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email:{email} not found",
+        )
+    return user
 
 
 async def create_user(body: UserIn, db: Session) -> User:
@@ -62,7 +68,7 @@ async def create_user(body: UserIn, db: Session) -> User:
     return new_user
 
 
-async def update_token(user: User, token: str | None, db: Session) -> None:
+async def update_token(user: UserOut, token: str | None, db: Session) -> None:
     """
      Update the refresh token for a given user in the database.
 
@@ -112,4 +118,5 @@ async def update_avatar(email, url: str, db: Session) -> UserOut:
     user = await get_user_by_email(email, db)
     user.avatar = url
     db.commit()
+    db.refresh(user)
     return user
