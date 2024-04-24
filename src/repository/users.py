@@ -127,9 +127,10 @@ async def set_user_role(user: UserOut, email: str, role: str, db: Session) -> Us
         email (str): The email address of the user whose role will be set.
         role (str): The new role.
         db (Session): The database session.
-
     Returns:
         UserOut: The user with the updated role.
+    Raises:
+        HTTPException:
     """
     if user.role == "admin":
         user = await get_user_by_email(email, db)
@@ -142,3 +143,7 @@ async def set_user_role(user: UserOut, email: str, role: str, db: Session) -> Us
         db.commit()
         db.refresh(user)
         return user
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=f"Only admin users are allowed to set the role of users",
+    )
