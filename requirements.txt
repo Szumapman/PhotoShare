@@ -1,10 +1,6 @@
 fastapi
 uvicorn[standard]
-sqlalchemy~=2.0.29
+sqlalchemy
 psycopg2-binary
 alembic
 pydantic-settings
-redis
-fastapi-limiter
-
-pytest~=8.1.1
