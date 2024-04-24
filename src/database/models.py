@@ -1,9 +1,8 @@
-import sqlalchemy
-from sqlalchemy import Column, Integer, String, func, Boolean, Enum
+from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey
 from sqlalchemy.sql.sqltypes import DateTime
+from sqlalchemy.orm import relationship, declarative_base
 
-
-Base = sqlalchemy.orm.declarative_base()
+Base = declarative_base()
 
 
 class User(Base):
@@ -23,12 +22,103 @@ class User(Base):
     """
 
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True,  autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(255), nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     confirmed = Column(Boolean, default=False)
-    role = Column(Enum('admin', 'moderator', 'standard', name='user_roles'), nullable=False)
+    role = Column(
+        Enum("admin", "moderator", "standard", name="user_roles"), nullable=False
+    )
     password = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=func.now())
     avatar = Column(String(255), nullable=True)
     refresh_token = Column(String(255), nullable=True)
+
+    photos = relationship("Photo", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
+
+
+class Photo(Base):
+    """
+    Represents a photo uploaded by a user.
+    Contains file paths and metadata about the upload.
+    :param id: Primary key.
+    :type id: int
+    :param file_path: Required, the path to the photo file.
+    :type file_path: str
+    :param upload_date: Automatically set to the current time upon upload.
+    :type upload_date: DateTime
+    :param user_id: Foreign key to the user who uploaded the photo.
+    :type user_id: int
+    """
+
+    __tablename__ = "photos"
+    id = Column(Integer, primary_key=True)
+    file_path = Column(String(255), nullable=False)
+    upload_date = Column(DateTime, default=func.now())
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="photos")
+    comments = relationship("Comment", back_populates="photo")
+    tags = relationship("Tag", secondary="photo_tags", back_populates="photos")
+
+
+class Comment(Base):
+    """
+    Represents a comment made by a user on a photo.
+    Contains the comment text and metadata.
+    :param id: Primary key.
+    :type id: int
+    :param text: Required, the content of the comment.
+    :type text: str
+    :param date_posted: Automatically set to the current time when the comment is posted.
+    :type date_posted: DateTime
+    :param photo_id: Foreign key to the commented photo.
+    :type photo_id: int
+    :param user_id: Foreign key to the user who made the comment.
+    :type user_id: int
+    """
+
+    __tablename__ = "comments"
+    id = Column(Integer, primary_key=True)
+    text = Column(String(255), nullable=False)
+    date_posted = Column(DateTime, default=func.now())
+
+    photo_id = Column(Integer, ForeignKey("photos.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="comments")
+    photo = relationship("Photo", back_populates="comments")
+
+
+class Tag(Base):
+    """
+    Represents a tag that can be associated with multiple photos.
+    Contains the name of the tag.
+    :param id: Primary key.
+    :type id: int
+    :param tag_name: Required, the name of the tag.
+    :type tag_name: str
+    """
+
+    __tablename__ = "tags"
+    id = Column(Integer, primary_key=True)
+    tag_name = Column(String(50), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    photos = relationship("Photo", secondary="photo_tags", back_populates="tags")
+
+
+class PhotoTag(Base):
+    """
+    Represents a junction table for many-to-many relationship between photos and tags.
+    Allows tagging photos with multiple tags.
+    :param photo_id: Foreign key to the photo, part of the primary key.
+    :type photo_id: int
+    :param tag_id: Foreign key to the tag, part of the primary key.
+    :type tag_id: int
+    """
+
+    __tablename__ = "photo_tags"
+    photo_id = Column(Integer, ForeignKey("photos.id"), primary_key=True)
+    tag_id = Column(Integer, ForeignKey("tags.id"), primary_key=True)
