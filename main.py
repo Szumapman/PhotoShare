@@ -4,7 +4,7 @@ from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.conf.config import settings
-from src.routes import auth, users, admin
+from src.routes import auth, users
 import uvicorn
 from dotenv import load_dotenv
 

@@ -12,7 +12,7 @@ from src.database.models import User
 from src.repository import users as repository_users
 from src.services.auth import auth_service, Auth
 from src.conf.config import settings
-from schemas import UserOut
+from src.schemas import UserOut
 
 router = APIRouter(prefix="/users", tags=["users"])
 
