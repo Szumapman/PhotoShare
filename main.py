@@ -8,7 +8,7 @@ from src.routes import auth, users
 import uvicorn
 from dotenv import load_dotenv
 
-origins = ["http://localhost:8000"]
+origins = ["http://localhost:3000"]
 
 load_dotenv()
 app = FastAPI()
@@ -26,34 +26,26 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 
 
-@app.on_event("startup")
-async def startup():
+async def startup_event():
     """
-    Perform tasks when the application starts up.
-
-    This function initializes a connection to Redis and sets up rate limiting.
+    This function is called during the startup of the FastAPI application.
+    It creates a Redis connection using the settings from the application configuration,
+    and then initializes the FastAPILimiter with the Redis connection.
+    The FastAPILimiter is used to implement rate limiting for the API endpoints,
+    to prevent abuse and ensure fair usage of the application.
     """
-
-    r = await Redis(
+    redis_base = await Redis(
         host=settings.redis_host,
         port=settings.redis_port,
+        # password=settings.redis_password,
         db=0,
         encoding="utf-8",
         decode_responses=True,
     )
-    await FastAPILimiter.init(r)
+    await FastAPILimiter.init(redis_base)
 
 
-@app.get("/")
-def read_root():
-    """
-    Handle GET request to the root endpoint.
-
-    Returns:
-        dict: A simple welcome message.
-    """
-
-    return {"message": "Welcome in PhotoShareApp!"}
+app.add_event_handler("startup", startup_event)
 
 
 if __name__ == "__main__":
