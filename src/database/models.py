@@ -1,9 +1,9 @@
+import sqlalchemy
 from sqlalchemy import Column, Integer, String, func, Boolean, Enum
 from sqlalchemy.sql.sqltypes import DateTime
-from sqlalchemy.ext.declarative import declarative_base
 
 
-Base = declarative_base()
+Base = sqlalchemy.orm.declarative_base()
 
 
 class User(Base):

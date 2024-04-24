@@ -21,6 +21,10 @@ fastapi-mail = "*"
 fastapi-limiter = "*"
 bcrypt = "*"
 typing-extensions = "*"
+pytest = "*"
+pydantic = "*"
+httpx = "*"
+pytest-asyncio = "*"
 
 [dev-packages]
 
