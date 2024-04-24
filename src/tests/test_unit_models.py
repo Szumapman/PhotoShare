@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from ..database.models import Base, User, Photo, Comment, Tag, PhotoTag
+from ..database.models import Base, User, Photo, Comment, Tag
 
 
 @pytest.fixture(scope='module')

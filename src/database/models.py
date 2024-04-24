@@ -124,7 +124,3 @@ class PhotoTag(Base):
     __tablename__ = 'photo_tags'
     photo_id = Column(Integer, ForeignKey('photos.photo_id'), primary_key=True)
     tag_id = Column(Integer, ForeignKey('tags.tag_id'), primary_key=True)
-
-
-engine = create_engine('sqlite:///testDB.db')
-Base.metadata.create_all(engine)
