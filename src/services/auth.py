@@ -1,13 +1,12 @@
+import pickle
 from typing import Optional
+from datetime import datetime, timedelta
 
 from jose import JWTError, jwt
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-import redis as redis
-import pickle
+from redis import Redis
 import bcrypt
 
 from src.conf.config import settings
@@ -39,11 +38,10 @@ class Auth:
 
     """
 
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     SECRET_KEY = settings.secret_key
     ALGORITHM = settings.algorithm
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-    r = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
+    r = Redis(host=settings.redis_host, port=settings.redis_port, db=0)
 
     def verify_password(self, plain_password, hashed_password):
         """Verify if the plain password matches the hashed password."""
