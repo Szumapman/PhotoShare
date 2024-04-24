@@ -20,7 +20,6 @@ class Auth:
     Utility class for handling authentication-related operations.
 
     Attributes:
-        pwd_context (CryptContext): Password hashing context using the bcrypt scheme.
         SECRET_KEY (str): Secret key used for JWT token generation.
         ALGORITHM (str): Algorithm used for JWT token generation.
         oauth2_scheme (OAuth2PasswordBearer): OAuth2 password bearer scheme.
@@ -41,7 +40,12 @@ class Auth:
     SECRET_KEY = settings.secret_key
     ALGORITHM = settings.algorithm
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-    r = Redis(host=settings.redis_host, port=settings.redis_port, db=0)
+    r = Redis(
+        host=settings.redis_host,
+        port=settings.redis_port,
+        # password=settings.redis_password,
+        db=0,
+    )
 
     def verify_password(self, plain_password, hashed_password):
         """Verify if the plain password matches the hashed password."""
