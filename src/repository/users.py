@@ -47,7 +47,15 @@ async def create_user(body: UserIn, db: Session) -> User:
         print(e)
     if avatar is None:
         pass
-    new_user = User(**body.model_dump(), avatar=avatar)
+    new_user = User(
+        username=body.username,
+        email=body.email,
+        password=body.password,
+        role=(
+            "admin" if await count_users(db) == 0 else "standard"
+        ),  # tworzenia admina jako pierwszego usera do czasu zrobienia skyptu
+        avatar=avatar,
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
