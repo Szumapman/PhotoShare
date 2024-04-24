@@ -1,6 +1,12 @@
 import re
-
+from enum import Enum
 from pydantic import BaseModel, Field, EmailStr, field_validator
+
+
+class UserRoleValid(str, Enum):
+    admin = "admin"
+    moderator = "moderator"
+    standard = "standard"
 
 
 class UserIn(BaseModel):
@@ -40,13 +46,13 @@ class UserOut(UserIn):
     Attributes:
         id (int): The unique identifier of the user.
         password (str): Hashed password.
-        role (str): The role of the user.
+        role (UserRoleValid): The role of the user.
         avatar (str): The avatar URL of the user.
     """
 
     id: int
     password: str = Field(max_length=255)
-    role: str
+    role: UserRoleValid
     avatar: str = "default_avatar.jpg"
 
     @field_validator("password")
@@ -84,3 +90,8 @@ class RequestEmail(BaseModel):
     """
 
     email: EmailStr
+
+
+class UserRole(BaseModel):
+    email: EmailStr
+    role: UserRoleValid
