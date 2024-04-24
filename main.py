@@ -8,7 +8,7 @@ from src.routes import auth, users
 import uvicorn
 from dotenv import load_dotenv
 
-origins = ["http://localhost:8000"]
+origins = ["http://localhost:3000"]
 
 load_dotenv()
 app = FastAPI()
