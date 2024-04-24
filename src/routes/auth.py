@@ -8,7 +8,7 @@ from fastapi.requests import Request
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.schemas import UserIn, UserOut, TokenModel, RequestEmail
+from src.schemas import UserIn, UserOut, TokenModel, RequestEmail, UserRole
 from src.repository import users as repository_users
 from src.services.auth import auth_service
 from src.services.email_service import send_email
@@ -91,9 +91,10 @@ async def login(
     """
 
     user = await repository_users.get_user_by_email(body.username, db)
-    if user is None:
+    if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with username:{body.username} not found",
         )
     if not user.confirmed:
         raise HTTPException(
@@ -132,6 +133,11 @@ async def refresh_token(
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
     user = await repository_users.get_user_by_email(email, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email:{email} not found",
+        )
     if user.refresh_token != token:
         await repository_users.update_token(user, None, db)
         raise HTTPException(
@@ -198,7 +204,11 @@ async def request_email(
     """
 
     user = await repository_users.get_user_by_email(body.email, db)
-
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email:{body.email} not found",
+        )
     if user.confirmed:
         return {"message": "Your email is already confirmed"}
     if user:
@@ -206,3 +216,13 @@ async def request_email(
             send_email, user.email, user.username, request.base_url
         )
     return {"message": "Check your email for confirmation."}
+
+
+@router.patch("/set_role", response_model=UserRole)
+async def set_role(
+    body: UserRole,
+    current_user: UserOut = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+):
+    user = await repository_users.set_user_role(current_user, body.email, body.role, db)
+    return user  # await repository_users.set_user_role(current_user, body.email, body.role, db)
