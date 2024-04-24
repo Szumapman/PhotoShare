@@ -224,5 +224,5 @@ async def set_role(
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
-    user = await repository_users.set_user_role(current_user, body.email, body.role, db)
-    return user  # await repository_users.set_user_role(current_user, body.email, body.role, db)
+    # user = await repository_users.set_user_role(current_user, body.email, body.role, db)
+    return await repository_users.set_user_role(current_user, body.email, body.role, db)
