@@ -25,6 +25,7 @@ pytest = "*"
 pydantic = "*"
 httpx = "*"
 pytest-asyncio = "*"
+sqlalchemy-utils = "*"
 
 [dev-packages]
 

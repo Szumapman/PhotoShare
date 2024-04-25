@@ -1,6 +1,7 @@
 import re
 from enum import Enum
 from pydantic import BaseModel, Field, EmailStr, field_validator
+from typing import List
 
 
 class UserRoleValid(str, Enum):
@@ -95,3 +96,23 @@ class RequestEmail(BaseModel):
 class UserRole(BaseModel):
     email: EmailStr
     role: UserRoleValid
+
+
+class TagIn(BaseModel):
+    tag_name: str
+
+
+class TagOut(BaseModel):
+    id: int
+    tag_name: str
+
+    class Config:
+        from_attributes = True
+
+
+class PhotoIn(BaseModel):
+    filename: str
+    tags: List[TagIn]
+    # title: str
+    # description: str
+    # file_path: str
