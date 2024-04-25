@@ -46,6 +46,8 @@ class Photo(Base):
     :type id: int
     :param file_path: Required, the path to the photo file.
     :type file_path: str
+    :param description: The description of the photo.
+    :type description: str
     :param upload_date: Automatically set to the current time upon upload.
     :type upload_date: DateTime
     :param user_id: Foreign key to the user who uploaded the photo.
@@ -55,6 +57,7 @@ class Photo(Base):
     __tablename__ = "photos"
     id = Column(Integer, primary_key=True)
     file_path = Column(String(255), nullable=False)
+    description = Column(String(500), nullable=False)
     upload_date = Column(DateTime, default=func.now())
     user_id = Column(Integer, ForeignKey("users.id"))
 
