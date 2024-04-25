@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+import cloudinary
 
 
 class Settings(BaseSettings):
@@ -64,6 +65,14 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+
+
+# class Photo(BaseSettings):
+#     cloudinary.config(
+#     cloud_name="Nazwa konta",
+#     api_key="Klucz dostępu",
+#     api_secret="hasło dostępu"
+# )
 
 
 settings = Settings()
