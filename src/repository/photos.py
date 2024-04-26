@@ -4,10 +4,10 @@ from src.database.models import Photo
 from src.schemas import PhotoOut
 
 
-async def upload_photo(file_path: str, user_id: int, db: Session):
+async def upload_photo(file_path: str, user_id: int, description: str, db: Session):
     new_photo = Photo(
         file_path=file_path,
-        description="na razie nie ma",
+        description=description,
         user_id=user_id,
     )
     db.add(new_photo)
