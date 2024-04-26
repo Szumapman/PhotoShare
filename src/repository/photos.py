@@ -14,6 +14,7 @@ async def upload_photo(file_path: str, user_id: int, db: Session):
     db.commit()
     db.refresh(new_photo)
     return PhotoOut(
+        id=new_photo.id,
         file_path=new_photo.file_path,
         description=new_photo.description,
         upload_date=new_photo.upload_date,
