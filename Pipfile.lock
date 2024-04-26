@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "57ea19c28cc63d4e0e5e419db4820af4be98696a92675a68c96a453d3c947c06"
+            "sha256": "7be7698d1c8023ffb29dacb17e525c38c02577ae70023a3cacb716bee67d5ca6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -49,14 +49,6 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==4.3.0"
-        },
-        "async-timeout": {
-            "hashes": [
-                "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f",
-                "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"
-            ],
-            "markers": "python_version >= '3.7'",
-            "version": "==4.0.3"
         },
         "bcrypt": {
             "hashes": [
@@ -566,6 +558,15 @@
             "markers": "python_version >= '3.8'",
             "version": "==0.23.6"
         },
+        "pytest-mock": {
+            "hashes": [
+                "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f",
+                "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==3.14.0"
+        },
         "python-dotenv": {
             "hashes": [
                 "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca",
@@ -593,12 +594,12 @@
         },
         "redis": {
             "hashes": [
-                "sha256:8a74fae7cbd25493142c8cc2f79c21b2e3c03bf85dd3525a1db9f33ff47a3f2d",
-                "sha256:9cac9a8ce8926a61f2dd81992978ffccd98a2bd065ac97694d49d28e7c928b59"
+                "sha256:7adc2835c7a9b5033b7ad8f8918d09b7344188228809c98df07af226d39dec91",
+                "sha256:ec31f2ed9675cc54c21ba854cfe0462e6faf1d83c8ce5944709db8a4700b9c61"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.8'",
-            "version": "==5.1.0b4"
+            "markers": "python_version >= '3.7'",
+            "version": "==5.0.4"
         },
         "rsa": {
             "hashes": [

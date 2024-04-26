@@ -32,7 +32,14 @@ def add_tag_to_photo(
         tag3 (Optional[str]): The third tag to add to the photo.
         tag4 (Optional[str]): The fourth tag to add to the photo.
         tag5 (Optional[str]): The fifth tag to add to the photo.
-        db (Session, optional): The database session. Defaults to Depends(SessionLocal).
+        db (Session, optional): The database session.
+
+    Raises:
+        HTTPException: If the maximum number of tags has been reached for this photo.
+        HTTPException: If a tag already exists for this photo.
+
+    Returns:
+        None
     """
 
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
