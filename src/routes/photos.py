@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
 import cloudinary
@@ -25,12 +27,13 @@ cloudinary.config(
 async def upload_photo(
     file: UploadFile = File(),
     description: str = Form(""),
+    tags: List[str] = Form(...),
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
     upload_result = cloudinary.uploader.upload(file.file)
     photo_url = upload_result["url"]
     new_photo = await photos_repository.upload_photo(
-        photo_url, current_user.id, description, db
+        photo_url, current_user.id, description, tags, db
     )
     return new_photo
