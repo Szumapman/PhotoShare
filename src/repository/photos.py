@@ -18,7 +18,10 @@ async def upload_photo(
     db.commit()
     db.refresh(new_photo)
 
+    num_tags_added = 0
     for tag_name in tags:
+        if num_tags_added >= 5:
+            break
         tag_name = tag_name.strip().lower()
         if tag_name:
             tag = db.query(Tag).filter(Tag.tag_name == tag_name).first()
@@ -29,6 +32,7 @@ async def upload_photo(
                 db.refresh(tag)
             photo_tag = PhotoTag(photo_id=new_photo.id, tag_id=tag.id)
             db.add(photo_tag)
+            num_tags_added += 1
     db.commit()
 
     return PhotoOut(
