@@ -2,6 +2,7 @@ import re
 from enum import Enum
 from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import List
+from datetime import datetime
 
 
 class UserRoleValid(str, Enum):
@@ -110,9 +111,23 @@ class TagOut(BaseModel):
         from_attributes = True
 
 
+class PhotoBase(BaseModel):
+    file_path: str
+
+
 class PhotoIn(BaseModel):
     filename: str
     tags: List[TagIn]
     # title: str
     # description: str
     # file_path: str
+
+
+class Photo(PhotoBase):
+    photo_id: int
+    upload_date: datetime
+    user_id: int
+    tags: List[str] = []
+
+    class Config:
+        from_attributes = True

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from src.database.models import Tag
+from src.database.models import Tag, Photo
 
 
 def get_or_create_tag(db: Session, tag_name: str) -> Tag:
