@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.conf.config import settings
 from src.routes import auth
+from src.routes import photos
 import uvicorn
 from dotenv import load_dotenv
 
@@ -22,6 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(photos.router, prefix="/api")
 
 
 async def startup_event():
