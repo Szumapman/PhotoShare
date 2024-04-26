@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field, EmailStr, field_validator
 
@@ -93,5 +94,21 @@ class RequestEmail(BaseModel):
 
 
 class UserRole(BaseModel):
+    """
+    Data model for changing user roles.
+
+    Attributes:
+        email (str): The email address of the user to change role for.
+        role (str): The role of the user.
+    """
+
     email: EmailStr
     role: UserRoleValid
+
+
+class PhotoOut(BaseModel):
+    id: int
+    file_path: str
+    description: str
+    upload_date: datetime
+    # user_id: int  # raczej do usunięcia, na razie zostawione do testu
