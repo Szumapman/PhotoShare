@@ -37,3 +37,8 @@ async def upload_photo(
         description=new_photo.description,
         upload_date=new_photo.upload_date,
     )
+
+
+# szukamy zdjecie po ID.
+def get_photo_by_id(photo_id: int, db: Session):
+    return db.query(Photo).filter(Photo.id == photo_id).first()

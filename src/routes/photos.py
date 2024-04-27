@@ -6,6 +6,7 @@ import cloudinary
 import cloudinary.uploader
 
 from src.database.db import get_db
+from src.repository.photos import get_photo_by_id
 from src.schemas import PhotoOut
 from src.conf.config import settings
 from src.services.auth import auth_service
@@ -53,7 +54,7 @@ async def download_photo(
         current_user: User = Depends(auth_service.get_current_user),
         db: Session = Depends(get_db),
 ):
-    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    photo = get_photo_by_id(photo_id, db)
     if not photo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
 
