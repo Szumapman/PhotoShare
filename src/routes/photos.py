@@ -9,12 +9,13 @@ from src.database.db import get_db
 from src.schemas import PhotoOut
 from src.conf.config import settings
 from src.services.auth import auth_service
-from src.database.models import User
+from src.database.models import User, Photo
 from src.repository import photos as photos_repository
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
+# moze ten pszeniesc do config.py?
 cloudinary.config(
     cloud_name=settings.cloudinary_name,
     api_key=settings.cloudinary_api_key,
@@ -43,3 +44,17 @@ async def upload_photo(
         photo_url, current_user.id, description, tags, db
     )
     return new_photo
+
+
+# Ciągniemy zdjęcie po linku.
+@router.get("/{photo_id}/download")
+async def download_photo(
+        photo_id: int,
+        current_user: User = Depends(auth_service.get_current_user),
+        db: Session = Depends(get_db),
+):
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
+
+    return {"photo_url": photo.file_path}
