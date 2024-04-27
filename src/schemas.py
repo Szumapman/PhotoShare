@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel, Field, EmailStr, field_validator
 
@@ -112,3 +113,16 @@ class PhotoOut(BaseModel):
     file_path: str
     description: str
     upload_date: datetime
+
+
+class CommentIn(BaseModel):
+    photo_id: int
+    text: str
+
+
+class CommentOut(BaseModel):
+    id: int
+    photo_id: int
+    text: str
+    user_id: int
+    date_posted: datetime = datetime.now()
