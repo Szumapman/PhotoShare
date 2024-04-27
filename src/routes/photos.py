@@ -43,3 +43,28 @@ async def upload_photo(
         photo_url, current_user.id, description, tags, db
     )
     return new_photo
+
+@router.delete("/{photo_id}", response_model=PhotoOut)
+async def delete_photo(
+    photo_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth_service.get_current_user)
+    ):
+    """
+    Delete a photo from the database if it belongs to the authenticated user.
+
+    Args:
+        photo_id (int): The ID of the photo to be deleted.
+        db (Session): The database session.
+        current_user (User): An instance of User representing the authenticated user.
+
+    Returns:
+        PhotoOut: The deleted photo object.
+
+    Raises:
+        HTTPException: If the specified photo is not found in the database.
+    """
+    photo = await photos_repository.delete_photo(photo_id, current_user, db)
+    if photo is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
+    return photo

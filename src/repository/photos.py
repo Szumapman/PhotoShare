@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from src.database.models import Photo, Tag, PhotoTag
-from src.schemas import PhotoOut
+from src.schemas import PhotoOut, UserOut
 
 
 async def upload_photo(
@@ -37,3 +37,24 @@ async def upload_photo(
         description=new_photo.description,
         upload_date=new_photo.upload_date,
     )
+
+async def delete_photo(
+    photo_id: int, user: UserOut, db: Session
+) -> PhotoOut | None:
+    """
+    Delete a photo from the database if it belongs to the specified user.
+
+    Args:
+        photo_id (int): The ID of the photo to be deleted.
+        user (UserOut): An instance of UserOut representing the user performing the deletion.
+        db (Session): The database session.
+
+    Returns:
+        PhotoOut | None: If the photo is successfully deleted, returns the deleted photo object.
+            If the photo does not exist or does not belong to the specified user, returns None.
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id, Photo.user_id == user.id).first()
+    if photo:
+        db.delete(photo)
+        db.commit()
+    return photo
