@@ -4,6 +4,7 @@ from fastapi_limiter import FastAPILimiter
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.conf.config import settings
+from src.routes import users
 from src.routes import auth
 from src.routes import photos
 import uvicorn
@@ -24,6 +25,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(photos.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
 
 
 async def startup_event():

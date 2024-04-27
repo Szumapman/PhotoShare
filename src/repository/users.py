@@ -1,9 +1,10 @@
 from libgravatar import Gravatar
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from src.database.models import User
-from src.schemas import UserIn, UserOut
+from src.database.models import Photo, User
+from src.schemas import UserIn, UserOut, UserProfile
 
 
 async def count_users(db: Session):
@@ -147,3 +148,42 @@ async def set_user_role(user: UserOut, email: str, role: str, db: Session) -> Us
         status_code=status.HTTP_403_FORBIDDEN,
         detail=f"Only admin users are allowed to set the role of users",
     )
+
+async def get_user_profile(
+    email: str,
+    user: UserOut,
+    db: Session
+    ) -> UserProfile | None:
+    """
+    Retrieves the user profile based on their email address.
+
+    Args:
+        email (str): The email address of the user for whom the profile should be retrieved.
+        user (UserOut): An object representing the currently logged-in user.
+        db (Session): The database session.
+
+    Returns:
+        UserProfile | None: The user profile if found and matches the currently logged-in user, None otherwise.
+    """
+    if user.email != email:
+        return None
+
+    user_with_photo_count = db.query(User.id, User.username, User.email, User.role, User.created_at).\
+        filter(User.email == email).\
+        outerjoin(Photo, User.id == Photo.user_id).\
+        add_column(func.count(Photo.id).label('photo_count')).\
+        group_by(User.id).\
+        first()
+    
+    user_id, username, user_email, role, created_at, photo_count = user_with_photo_count
+
+    user_profile = UserProfile(
+        id=user_id,
+        username=username,
+        email=user_email,
+        role=role,
+        created_at=created_at,
+        photo_count=photo_count
+    )
+
+    return user_profile

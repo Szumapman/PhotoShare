@@ -112,3 +112,23 @@ class PhotoOut(BaseModel):
     file_path: str
     description: str
     upload_date: datetime
+
+
+class UserProfile(BaseModel):
+    """
+    Data model representing a user's profile.
+
+    Attributes:
+        id (int): The unique identifier of the user.
+        username (str): The username of the user.
+        email (EmailStr): The email address of the user.
+        created_at (datetime): The date and time when the user's account was created.
+        role (UserRoleValid): The role of the user.
+        photo_count (int): The number of photos uploaded by the user.
+    """
+    id: int
+    username: str
+    email: EmailStr
+    created_at: datetime
+    role: UserRoleValid
+    photo_count: int
