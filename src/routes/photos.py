@@ -43,3 +43,28 @@ async def upload_photo(
         photo_url, current_user.id, description, tags, db
     )
     return new_photo
+
+@router.get("/{photo_id}", response_model=str)
+async def get_photo_file_path(
+    photo_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth_service.get_current_user)
+    ):
+    """
+    Retrieve the file path associated with a photo based on its ID.
+
+    Args:
+        photo_id (int): The ID of the photo.
+        db (Session): The database session.
+        current_user (User): The authenticated user.
+
+    Returns:
+        str: The file path associated with the photo, if found.
+
+    Raises:
+        HTTPException: If the specified photo is not found in the database.
+    """
+    file_path = await photos_repository.get_photo(photo_id, current_user, db)
+    if file_path is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
+    return file_path

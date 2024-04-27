@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from src.database.models import Photo, Tag, PhotoTag
-from src.schemas import PhotoOut
+from src.schemas import PhotoOut, UserOut
 
 
 async def upload_photo(
@@ -37,3 +37,22 @@ async def upload_photo(
         description=new_photo.description,
         upload_date=new_photo.upload_date,
     )
+
+async def get_photo(
+    photo_id: int, user: UserOut, db: Session
+) -> str | None:
+    """
+    Retrieve the file path associated with a photo from the database if it belongs to the specified user.
+
+    Args:
+        photo_id (int): The ID of the photo to be retrieved.
+        user (UserOut): An instance of UserOut representing the user requesting the photo.
+        db (Session): The database session.
+
+    Returns:
+        str | None: The file path associated with the photo, if found. None if the photo does not exist or does not belong to the user.
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id, Photo.user_id == user.id).first()
+    if photo:
+        return photo.file_path
+    return None
