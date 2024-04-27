@@ -37,3 +37,16 @@ async def upload_photo(
         description=new_photo.description,
         upload_date=new_photo.upload_date,
     )
+
+
+def get_photo_by_id(photo_id: int, db: Session):
+    return db.query(Photo).filter(Photo.id == photo_id).first()
+
+
+def update_photo_description(photo_id: int, new_description: str, db: Session):
+    photo = db.query(Photo).filter(Photo.id == photo_id).one_or_none()
+    if photo:
+        photo.description = new_description
+        db.commit()
+        return photo
+    return None
