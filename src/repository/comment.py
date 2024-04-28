@@ -18,9 +18,8 @@ async def add_comment(user_id: int, photo_id: int, text: str) -> Comment:
         Comment: The newly created Comment object.
 
     """
-    date_posted = datetime.now()
     new_comment = Comment(
-        user_id=user_id, photo_id=photo_id, text=text, created_at=date_posted
+        user_id=user_id, photo_id=photo_id, text=text, created_at=datetime.now()
     )
     return new_comment
 

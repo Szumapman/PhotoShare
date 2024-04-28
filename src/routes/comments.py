@@ -1,3 +1,5 @@
+from sqlalchemy.exc import IntegrityError
+
 from sqlalchemy.orm import Session
 from src.database.models import Comment
 from src.schemas import CommentIn, CommentOut, UserRoleValid, UserOut
@@ -20,8 +22,11 @@ async def create_comment(
     """
     Creates a new comment associated with a photo.
 
+    Route: POST /comments/photos/{photo_id}/
+
     Args:
         comment_data (CommentIn): Data for the new comment.
+        photo_id (int): The ID of the photo associated with the comment.
         current_user (str, optional): Current user's authentication token.
         db (Session, optional): Database session.
 
@@ -29,34 +34,54 @@ async def create_comment(
         CommentOut: The newly created comment.
 
     Raises:
-        HTTPException: If the user is not authorized.
+        HTTPException: If there are errors in the request or authorization fails.
     """
+    if not comment_data.text.strip():   
+        raise HTTPException(status_code=400, detail="Comment text cannot be empty")
+
+    if not isinstance(comment_data.photo_id, int) or comment_data.photo_id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid photo_id")
 
     if not current_user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    new_comment = Comment(
-        photo_id=comment_data.photo_id, user_id=current_user.id, text=comment_data.text
-    )
-    db.add(new_comment)
-    db.commit()
-    db.refresh(new_comment)
 
-    return new_comment
+    try:
+        new_comment = Comment(
+            photo_id=comment_data.photo_id,
+            user_id=current_user.id,
+            text=comment_data.text,
+        )
+        db.add(new_comment)
+        db.commit()
+        db.refresh(new_comment)
+        return new_comment
+    except IntegrityError as e:  # kod przechwytuje błąd i przechodzi do obsługi
+        error_message = str(e.orig) # sprawdza przyczynę błędu
+        if "foreign key constraint" in error_message.lower():
+            raise HTTPException(status_code=400, detail="Invalid photo_id")
+        else:
+            db.rollback()  # jeśli nie narusza klucza obcego robi rollback(cofa wszystkie zmiany przed błędem)
+            raise HTTPException(
+                status_code=400,
+                detail="Error creating comment: {}".format(error_message),
+            )
 
 
 @router.put("/comments/{comment_id}/", response_model=CommentOut)
 async def update_comment(
     comment_id: int,
-    updated_at: CommentIn,
+    text: str,
     current_user: str = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Updates the content of a comment if the current user is the owner of the comment.
 
+    Route: PUT /comments/{comment_id}/
+
     Args:
         comment_id (int): The ID of the comment to update.
-        updated_at (CommentIn): Updated data for the comment.
+        text (str): Updated data for the comment.
         current_user (str): Current user's authentication token.
         db (Session): Database session.
 
@@ -75,11 +100,19 @@ async def update_comment(
             status_code=403, detail="Forbidden: You can only edit your own comments"
         )
 
-    comment.text = updated_at.text
-    db.commit()
-    db.refresh(comment)
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="Comment text cannot be empty")
 
-    return comment
+    try:
+        comment.text = text
+        db.commit()
+        db.refresh(comment)
+        return comment
+    except IntegrityError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Error updating comment: {}".format(str(e))
+        )
 
 
 @router.delete("/comments/{comment_id}/")
@@ -90,6 +123,8 @@ async def delete_comment(
 ):
     """
     Deletes a comment if the current user is an admin/moderator.
+
+    Route: DELETE /comments/{comment_id}/
 
     Args:
         comment_id (int): The ID of the comment to delete.
