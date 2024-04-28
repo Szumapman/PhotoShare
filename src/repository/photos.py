@@ -42,7 +42,7 @@ async def get_photo(
     photo_id: int, user: UserOut, db: Session
 ) -> str | None:
     """
-    Retrieve the file path associated with a photo from the database if it belongs to the specified user.
+    Retrieve the file path associated with a photo from the database if it belongs to the specified user or if the user is administrator.
 
     Args:
         photo_id (int): The ID of the photo to be retrieved.
@@ -50,9 +50,11 @@ async def get_photo(
         db (Session): The database session.
 
     Returns:
-        str | None: The file path associated with the photo, if found. None if the photo does not exist or does not belong to the user.
+        str | None: The file path associated with the photo, if found and accessible by the user. Returns None if the photo does not exist, does not belong to the user, or the user does not have access.
     """
-    photo = db.query(Photo).filter(Photo.id == photo_id, Photo.user_id == user.id).first()
-    if photo:
-        return photo.file_path
-    return None
+    photo = db.query(Photo).filter(
+        (Photo.id == photo_id) & 
+        ((Photo.user_id == user.id) | (user.role == "admin"))
+    ).first()
+
+    return photo.file_path if photo else None
