@@ -29,7 +29,7 @@ async def get_user_profile(
     Raises:
         HTTPException: If the user's profile is not found, returns a 404 Not Found error.
     """
-    user_profile = await users_repository.get_user_profile(email, current_user, db)
+    user_profile = await users_repository.get_user_profile(email, db)
     if user_profile is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user_profile

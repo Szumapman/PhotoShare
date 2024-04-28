@@ -151,7 +151,6 @@ async def set_user_role(user: UserOut, email: str, role: str, db: Session) -> Us
 
 async def get_user_profile(
     email: str,
-    user: UserOut,
     db: Session
     ) -> UserProfile | None:
     """
@@ -159,14 +158,11 @@ async def get_user_profile(
 
     Args:
         email (str): The email address of the user for whom the profile should be retrieved.
-        user (UserOut): An object representing the currently logged-in user.
         db (Session): The database session.
 
     Returns:
-        UserProfile | None: The user profile if found and matches the currently logged-in user, None otherwise.
+        UserProfile | None: The user profile if found, None otherwise.
     """
-    if user.email != email:
-        return None
 
     user_with_photo_count = db.query(User.id, User.username, User.email, User.role, User.created_at).\
         filter(User.email == email).\
@@ -175,6 +171,8 @@ async def get_user_profile(
         group_by(User.id).\
         first()
     
+    if user_with_photo_count is None:
+        return None
     user_id, username, user_email, role, created_at, photo_count = user_with_photo_count
 
     user_profile = UserProfile(
