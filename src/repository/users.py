@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 
 from src.database.models import User
 from src.schemas import UserIn, UserOut
+from src.services.auth import auth_service
 
 
 async def count_users(db: Session):
@@ -147,3 +148,35 @@ async def set_user_role(user: UserOut, email: str, role: str, db: Session) -> Us
         status_code=status.HTTP_403_FORBIDDEN,
         detail=f"Only admin users are allowed to set the role of users",
     )
+
+
+async def update_users_me(
+    user: UserOut,
+    body: UserIn,
+    db: Session
+    ) -> UserOut:
+    """
+    Update the profile of a user.
+
+    Args:
+        user (UserOut): The user whose profile is being updated.
+        body (UserIn): The updated user data.
+        db (Session): The database session.
+
+    Returns:
+        UserOut: The updated user profile.
+
+    Raises:
+        HTTPException: If there is an issue with updating the user profile.
+    """
+    exist_user = db.query(User).filter(User.email == body.email).first()
+    if exist_user and exist_user.id != user.id:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
+
+    new_user_data = db.query(User).filter(User.id == user.id).first()
+    if new_user_data:
+        new_user_data.username = body.username 
+        new_user_data.email = body.email
+        new_user_data.password = auth_service.get_password_hash(body.password)
+        db.commit()
+    return new_user_data
