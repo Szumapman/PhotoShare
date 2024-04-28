@@ -112,3 +112,23 @@ class PhotoOut(BaseModel):
     file_path: str
     description: str
     upload_date: datetime
+
+
+class UserProfileMe(BaseModel):
+    """
+    Represents the profile information of the authenticated user.
+
+    Attributes:
+        id (int): The ID of the user.
+        username (str): The username of the user.
+        email (EmailStr): The email address of the user.
+        role (UserRoleValid): The role of the user.
+        created_at (datetime): The date and time when the user account was created.
+        avatar (str): The URL of the user's avatar image.
+    """
+    id: int
+    username: str
+    email: EmailStr
+    role: UserRoleValid
+    created_at: datetime
+    avatar: str
