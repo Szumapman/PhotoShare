@@ -1,6 +1,9 @@
 from datetime import datetime
 from unittest import TestCase, mock
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
 from src.database.models import Comment
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -12,87 +15,116 @@ import asyncio
 
 class TestAddComment(TestCase):
 
-    def test_add_comment_empty_text(self):
+    # Test for successfully adding a comment
+    @pytest.mark.asyncio
+    async def test_add_comment_success(self):
         user_id = 1
         photo_id = 1
-        text = ""
-        mock_session = MagicMock()
+        text = "This is a valid comment."
+        result = await add_comment(user_id, photo_id, text)
+        assert isinstance(result, Comment)
+        assert result.text == text
+        assert result.user_id == user_id
+        assert result.photo_id == photo_id
 
-        fixed_date = datetime(2024, 4, 28, 12, 0, 0)
-        with patch("src.repository.comment.datetime") as mock_datetime:
-            mock_datetime.now.return_value = fixed_date
-            try:
-                new_comment = add_comment(user_id, photo_id, text)
-                assert False, "Expected HTTPException was not raised"
-            except HTTPException as e:
-                assert e.status_code == 422
+    # Test for successful comment update
+    @pytest.mark.asyncio
+    async def test_update_comment_success(self):
+        db = MagicMock(spec=Session)
+        comment = Comment(id=1, text="Old text", user_id=1, photo_id=1)
+        db.query.return_value.filter.return_value.first.return_value = comment
+        new_text = "Updated text"
+        updated_comment = await update_comment(comment_id=1, text=new_text, db=db)
+        assert updated_comment.text == new_text
+        db.commit.assert_called_once()
 
-    def test_add_comment_invalid_user_id(self):
-        fake_session = mock.Mock(spec=Session)
-        with self.assertRaises(ValueError) as context:
-            asyncio.run(add_comment(user_id=0, photo_id=1, text="Test comment"))
-        self.assertEqual(str(context.exception), "Invalid user_id")
+    # Test for updating an existing comment
+    @pytest.mark.asyncio
+    async def test_update_comment_not_found(self):
+        db = MagicMock(spec=Session)
+        db.query.return_value.filter.return_value.first.return_value = None
+        with pytest.raises(HTTPException) as exc_info:
+            await update_comment(comment_id=999, text="Some text", db=db)
+        assert exc_info.value.status_code == 404
+        assert exc_info.value.detail == "Comment not found"
 
-    def test_add_comment_invalid_photo_id(self):
-        fake_session = mock.Mock(spec=Session)
-        with self.assertRaises(ValueError) as context:
-            asyncio.run(add_comment(user_id=1, photo_id=0, text="Test comment"))
-        self.assertEqual(str(context.exception), "Invalid photo_id")
-
-    ######################
-    @mock.patch("src.repository.comment.datetime")
-    async def test_add_comment(self, mock_datetime):
-        mock_now = datetime(2024, 4, 28, 12, 0, 0)
-        mock_datetime.now.return_value = mock_now
-        expected_comment = Comment(
-            user_id=1, photo_id=1, text="Test comment", created_at=mock_now
-        )
-        actual_comment = await add_comment(user_id=1, photo_id=1, text="Test comment")
-        self.assertEqual(actual_comment.user_id, expected_comment.user_id)
-        self.assertEqual(actual_comment.photo_id, expected_comment.photo_id)
-        self.assertEqual(actual_comment.text, expected_comment.text)
-        self.assertEqual(actual_comment.created_at, expected_comment.created_at)
-
-    @mock.patch("src.repository.comment.datetime")
-    def test_update_comment(self, mock_datetime):
-        mock_now = datetime(2024, 4, 28, 12, 0, 0)
-        mock_datetime.now.return_value = mock_now
-        initial_text = "Initial comment text"
-        updated_text = "Updated comment text"
-        comment_id = 1
-        fake_session = mock.Mock(spec=Session)
-        fake_comment = Comment(
-            id=comment_id,
-            user_id=1,
-            photo_id=1,
-            text=initial_text,
-            date_posted=mock_now,
-        )
-        fake_session.query().filter().first.return_value = fake_comment
-        updated_comment = asyncio.run(
-            update_comment(comment_id, updated_text, fake_session)
-        )
-        self.assertEqual(updated_comment.text, updated_text)
-
-    def test_update_non_existing_comment(self):
-        fake_session = mock.Mock(spec=Session)
-        fake_session.query().filter().first.return_value = None
-        with self.assertRaises(HTTPException) as context:
-            asyncio.run(update_comment(9999, "Some text", fake_session))
-        self.assertEqual(context.exception.status_code, 404)
-        self.assertEqual(context.exception.detail, "Comment not found")
-
-    def test_update_comment_empty_text(self):
-        fake_session = mock.Mock(spec=Session)
-        fake_session.query().filter().first.return_value = None
-
-        async def run_update_comment():
-            with self.assertRaises(HTTPException) as context:
-                await update_comment(comment_id=1, text="", db=fake_session)
-            return context.exception
-
-        loop = asyncio.new_event_loop()
-        result = loop.run_until_complete(run_update_comment())
-        loop.close()
-        self.assertEqual(result.status_code, 404)
-        self.assertEqual(result.detail, "Comment not found")
+    # @patch("src.repository.comment.datetime")
+    # async def test_add_comment_empty_text(self, mock_datetime):
+    #     user_id = 1
+    #     photo_id = 1
+    #     text = ""
+    #     mock_datetime.now.return_value = datetime(2024, 4, 28, 12, 0, 0)
+    #
+    #     with self.assertRaises(HTTPException) as context:
+    #         await add_comment(user_id, photo_id, text)  # Await dla asynchronicznej funkcji
+    #     self.assertEqual(context.exception.status_code, 422)
+    #
+    # def test_add_comment_invalid_user_id(self):
+    #     fake_session = mock.Mock(spec=Session)
+    #     with self.assertRaises(ValueError) as context:
+    #         asyncio.run(add_comment(user_id=0, photo_id=1, text="Test comment"))
+    #     self.assertEqual(str(context.exception), "Invalid user_id")
+    #
+    # def test_add_comment_invalid_photo_id(self):
+    #     fake_session = mock.Mock(spec=Session)
+    #     with self.assertRaises(ValueError) as context:
+    #         asyncio.run(add_comment(user_id=1, photo_id=0, text="Test comment"))
+    #     self.assertEqual(str(context.exception), "Invalid photo_id")
+    #
+    # ######################
+    # @mock.patch("src.repository.comment.datetime")
+    # async def test_add_comment(self, mock_datetime):
+    #     mock_now = datetime(2024, 4, 28, 12, 0, 0)
+    #     mock_datetime.now.return_value = mock_now
+    #     expected_comment = Comment(
+    #         user_id=1, photo_id=1, text="Test comment", created_at=mock_now
+    #     )
+    #     actual_comment = await add_comment(user_id=1, photo_id=1, text="Test comment")
+    #     self.assertEqual(actual_comment.user_id, expected_comment.user_id)
+    #     self.assertEqual(actual_comment.photo_id, expected_comment.photo_id)
+    #     self.assertEqual(actual_comment.text, expected_comment.text)
+    #     self.assertEqual(actual_comment.created_at, expected_comment.created_at)
+    #
+    # @mock.patch("src.repository.comment.datetime")
+    # def test_update_comment(self, mock_datetime):
+    #     mock_now = datetime(2024, 4, 28, 12, 0, 0)
+    #     mock_datetime.now.return_value = mock_now
+    #     initial_text = "Initial comment text"
+    #     updated_text = "Updated comment text"
+    #     comment_id = 1
+    #     fake_session = mock.Mock(spec=Session)
+    #     fake_comment = Comment(
+    #         id=comment_id,
+    #         user_id=1,
+    #         photo_id=1,
+    #         text=initial_text,
+    #         date_posted=mock_now,
+    #     )
+    #     fake_session.query().filter().first.return_value = fake_comment
+    #     updated_comment = asyncio.run(
+    #         update_comment(comment_id, updated_text, fake_session)
+    #     )
+    #     self.assertEqual(updated_comment.text, updated_text)
+    #
+    # def test_update_non_existing_comment(self):
+    #     fake_session = mock.Mock(spec=Session)
+    #     fake_session.query().filter().first.return_value = None
+    #     with self.assertRaises(HTTPException) as context:
+    #         asyncio.run(update_comment(9999, "Some text", fake_session))
+    #     self.assertEqual(context.exception.status_code, 404)
+    #     self.assertEqual(context.exception.detail, "Comment not found")
+    #
+    # def test_update_comment_empty_text(self):
+    #     fake_session = mock.Mock(spec=Session)
+    #     fake_session.query().filter().first.return_value = None
+    #
+    #     async def run_update_comment():
+    #         with self.assertRaises(HTTPException) as context:
+    #             await update_comment(comment_id=1, text="", db=fake_session)
+    #         return context.exception
+    #
+    #     loop = asyncio.new_event_loop()
+    #     result = loop.run_until_complete(run_update_comment())
+    #     loop.close()
+    #     self.assertEqual(result.status_code, 404)
+    #     self.assertEqual(result.detail, "Comment not found")

@@ -13,9 +13,6 @@ from fastapi.testclient import TestClient
 from src.routes.comments import router, create_comment
 
 
-client = TestClient(app)
-
-
 def test_update_comment():
     with patch(
         "src.services.auth.auth_service.get_current_user"

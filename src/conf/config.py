@@ -36,30 +36,30 @@ class Settings(BaseSettings):
         env_file_encoding (str): Encoding of the environment file (default is "utf-8").
     """
 
-    postgres_db: str
-    postgres_user: str
-    postgres_password: str
-    postgres_host: str
-    postgres_port: int
-    sqlalchemy_database_url: str
-    secret_key: str
-    algorithm: str
-    mail_username: str
-    mail_password: str
-    mail_from: str
-    mail_port: int
-    mail_server: str
-    mail_from_name: str
-    mail_starttls: bool
-    mail_ssl_tls: bool
-    use_credentials: bool
-    validate_certs: bool
-    redis_host: str = "localhost"
+    postgres_db: str = 'default_db'
+    postgres_user: str = 'default_user'
+    postgres_password: str = 'default_password'
+    postgres_host: str = 'localhost'
+    postgres_port: int = 5432
+    sqlalchemy_database_url: str = 'sqlite:///./test.db'
+    secret_key: str = 'your_secret_key'
+    algorithm: str = 'HS256'
+    mail_username: str = 'your_email@example.com'
+    mail_password: str = 'your_email_password'
+    mail_from: str = 'your_email@example.com'
+    mail_port: int = 587
+    mail_server: str = 'smtp.example.com'
+    mail_from_name: str = 'Example Name'
+    mail_starttls: bool = True
+    mail_ssl_tls: bool = False
+    use_credentials: bool = True
+    validate_certs: bool = True
+    redis_host: str = 'localhost'
     redis_port: int = 6379
-    redis_password: str = "password"
-    cloudinary_name: str
-    cloudinary_api_key: str
-    cloudinary_api_secret: str
+    redis_password: str = 'password'
+    cloudinary_name: str = 'your_cloudinary_name'
+    cloudinary_api_key: str = 'your_cloudinary_api_key'
+    cloudinary_api_secret: str = 'your_cloudinary_api_secret'
 
     class Config:
         env_file = ".env"
