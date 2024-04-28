@@ -42,7 +42,7 @@ async def delete_photo(
     photo_id: int, user: UserOut, db: Session
 ) -> PhotoOut | None:
     """
-    Delete a photo from the database if it belongs to the specified user.
+    Delete a photo from the database if it belongs to the specified user or if the user is administrator.
 
     Args:
         photo_id (int): The ID of the photo to be deleted.
@@ -51,9 +51,13 @@ async def delete_photo(
 
     Returns:
         PhotoOut | None: If the photo is successfully deleted, returns the deleted photo object.
-            If the photo does not exist or does not belong to the specified user, returns None.
+            If the photo does not exist or does not belong to the specified user, or the user does not have access, returns None.
     """
-    photo = db.query(Photo).filter(Photo.id == photo_id, Photo.user_id == user.id).first()
+    photo = db.query(Photo).filter(
+        (Photo.id == photo_id) & 
+        ((Photo.user_id == user.id) | (user.role == "admin"))
+    ).first()
+
     if photo:
         db.delete(photo)
         db.commit()
