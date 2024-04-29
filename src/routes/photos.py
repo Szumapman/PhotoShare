@@ -27,7 +27,7 @@ cloudinary.config(
 async def upload_photo(
     file: UploadFile = File(),
     description: str = Form(""),
-    tags: list[str] = Form(),
+    tags: list[str] = Form([]),
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
