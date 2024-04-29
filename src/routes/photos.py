@@ -47,15 +47,26 @@ async def upload_photo(
     return new_photo
 
 
-# Ciągniemy zdjęcie po linku.
-@router.get("/{photo_id}/download")
+@router.get("/{photo_id}")
 async def download_photo(
-        photo_id: int,
-        current_user: User = Depends(auth_service.get_current_user),
-        db: Session = Depends(get_db),
-):
-    photo = get_photo_by_id(photo_id, db)
-    if not photo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
+    photo_id: int,
+    current_user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+) -> PhotoOut:
+    """
+    Get a photo by its ID.
 
-    return {"photo_url": photo.file_path}
+    Args:
+        photo_id (int): The photo ID.
+        current_user (User): The current authenticated user.
+        db (Session): Database session.
+
+    Returns:
+        PhotoOut: The photo matching the provided photo ID.
+    """
+    photo = await get_photo_by_id(photo_id, db)
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    return photo
