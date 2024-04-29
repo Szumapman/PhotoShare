@@ -120,34 +120,28 @@ async def update_avatar(email, url: str, db: Session) -> UserOut:
     return user
 
 
-async def set_user_role(user: UserOut, email: str, role: str, db: Session) -> UserOut:
+async def set_user_role(user_id: int, role: str, db: Session) -> UserOut:
     """
     Set the role of the user with the given email address in the database.
     Args:
-        user (UserOut): The user who wants to set the role (must be admin).
-        email (str): The email address of the user whose role will be set.
+        user_id (int): The user id to set the role to.
         role (str): The new role.
         db (Session): The database session.
     Returns:
         UserOut: The user with the updated role.
     Raises:
-        HTTPException:
+        HTTPException: If not user with the given id
     """
-    if user.role == "admin":
-        user = await get_user_by_email(email, db)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with email:{email} not found",
-            )
-        user.role = role
-        db.commit()
-        db.refresh(user)
-        return user
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail=f"Only admin users are allowed to set the role of users",
-    )
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id: {user_id} not found",
+        )
+    user.role = role
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 async def set_user_is_active(user_id: int, is_active: bool, db: Session) -> UserOut:
