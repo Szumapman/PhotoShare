@@ -1,29 +1,29 @@
 from typing import List
-
-from fastapi import (
-    APIRouter,
-    Depends,
-    UploadFile,
-    File,
-    Form,
-    HTTPException,
-    status,
-)
+from typing import Optional
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status, Query
 from sqlalchemy.orm import Session
 import cloudinary
 import cloudinary.uploader
-
+from fastapi.responses import StreamingResponse
 from src.database.db import get_db
-from src.repository.photos import get_photo_by_id, update_photo_description
-from src.schemas import PhotoOut, UserOut
+from src.schemas import PhotoOut, Tag
 from src.conf.config import settings
-from src.conf.config import CLOUDINARY_CONFIG
 from src.services.auth import auth_service
-from src.database.models import User
+from src.database.models import User,Photo
 from src.repository import photos as photos_repository
+import qrcode
+
+from io import BytesIO
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
+
+cloudinary.config(
+    cloud_name=settings.cloudinary_name,
+    api_key=settings.cloudinary_api_key,
+    api_secret=settings.cloudinary_api_secret,
+    secure=True,
+)
 
 
 @router.post("/", response_model=PhotoOut)
@@ -34,8 +34,11 @@ async def upload_photo(
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
+
     tags = tags[0].split(",")
-    if len(tags) > 5:
+
+    unique_tags= list(set(tags))
+    if len(unique_tags) >= 5:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Too many tags provided. You can use max of 5 tags.",
@@ -46,56 +49,45 @@ async def upload_photo(
         photo_url, current_user.id, description, tags, db
     )
     return new_photo
+@router.get("/qr/{file_path}")
+async def generation_qr(file_path:str):
+    qr= qrcode.make(file_path)
+    buffer=BytesIO
+    qr.save(buffer, format="PGN")
+    buffer.seek(0)
+    return StreamingResponse(buffer, media_type="image/png")
 
+@router.post("/", response_model=PhotoOut)
+def manipulation_photo(photo_id:str,
+                       width: Optional[int]= Query(None, deprecated="Szerokość"),
+                       height:Optional[int]=Query(None,deprecated="Wysokość"),
+                       crop:Optional[str]=Query(None,deprecated="Przycięcie wpisz: mfit,limit,pad,thumb,scale,fit,fill"),
+                       effect:Optional[str]=Query(None,deprecated="Dodaj effekt: sepia,grayscale,vignette,blur,red,invert,"
+                                                                  "brightness,saturation,pixelate"),
+                       db:Session=Depends(get_db)):
+    parms={}
+    if width:
+        parms["width"]=width
+    if height:
+        parms[height]=height
+    if crop:
+        parms["crop"]=crop
+    if effect:
+        parms["effect"]=effect
+    if parms:
+        manipul_photo= cloudinary.utils.cloudinary_url(photo_id, **parms)[0]
+        new_photo=Photo(file_path=manipul_photo)
+        db.add(manipul_photo)
+        db.commit()
+        db.refresh(manipul_photo)
+    else:
+        manipul_photo=photo_id
+    return manipul_photo
 
-@router.get("/{photo_id}")
-async def download_photo(
-    photo_id: int,
-    current_user: User = Depends(auth_service.get_current_user),
-    db: Session = Depends(get_db),
-) -> PhotoOut:
-    """
-    Get a photo by its ID.
-
-    Args:
-        photo_id (int): The photo ID.
-        current_user (User): The current authenticated user.
-        db (Session): Database session.
-
-    Returns:
-        PhotoOut: The photo matching the provided photo ID.
-    """
-    photo = await get_photo_by_id(photo_id, db)
-    if not photo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
-        )
-    return photo
-
-
-@router.patch("/{photo_id}/description")
-async def edit_photo_description(
-    photo_id: int,
-    description: str = Form(""),
-    current_user: User = Depends(auth_service.get_current_user),
-    db: Session = Depends(get_db),
-) -> PhotoOut:
-    """
-    Edit photo description
-
-    Args:
-        photo_id (int): Photo ID
-        description (str): new description
-        current_user (User): Current authenticated user
-        db (Session): Database
-
-    Returns:
-        PhotoOut: Updated photo object
-    """
-    updated_photo = update_photo_description(photo_id, description, current_user, db)
-    if not updated_photo:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update photo description",
-        )
-    return updated_photo
+@router.put("/", response_model=Tag)
+async def edit_tag(user_id:int,
+                   tag_id:int,
+                   new_tag_name:str,
+                   db:Session=Depends(get_db)):
+    new_tag= await photos_repository.edit_tag(user_id,tag_id,new_tag_name,db)
+    return new_tag
