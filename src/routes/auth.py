@@ -100,6 +100,10 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed"
         )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User is banned"
+        )
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password"
