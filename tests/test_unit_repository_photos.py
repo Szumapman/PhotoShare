@@ -8,6 +8,7 @@ from src.repository.photos import (
     get_photo,
 )
 
+
 class TestPhotos(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self):
@@ -17,13 +18,14 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
     async def test_get_photo_found(self):
         photo = Photo()
         self.session.query().filter().first.return_value = photo
-        result = await get_photo(photo_id=1, user=self.user, db=self.session)
+        result = await get_photo(photo_id=1, db=self.session)
         self.assertEqual(result, photo.file_path)
 
     async def test_get_photo_not_found(self):
         self.session.query().filter().first.return_value = None
-        result = await get_photo(photo_id=1, user=self.user, db=self.session)
+        result = await get_photo(photo_id=1, db=self.session)
         self.assertIsNone(result)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
