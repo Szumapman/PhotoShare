@@ -38,9 +38,8 @@ async def upload_photo(
         upload_date=new_photo.upload_date,
     )
 
-async def get_photo(
-    photo_id: int, user: UserOut, db: Session
-) -> str | None:
+
+async def get_photo(photo_id: int, db: Session) -> str | None:
     """
     Retrieve the file path associated with a photo from the database if it belongs to the specified user or if the user is administrator.
 
@@ -50,11 +49,8 @@ async def get_photo(
         db (Session): The database session.
 
     Returns:
-        str | None: The file path associated with the photo, if found and accessible by the user. Returns None if the photo does not exist, does not belong to the user, or the user does not have access.
+        str | None: The file path associated with the photo. Returns None if the photo with provided id is not found.
     """
-    photo = db.query(Photo).filter(
-        (Photo.id == photo_id) & 
-        ((Photo.user_id == user.id) | (user.role == "admin"))
-    ).first()
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
 
     return photo.file_path if photo else None
