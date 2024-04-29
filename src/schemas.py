@@ -1,7 +1,6 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import List
 
 from pydantic import BaseModel, Field, EmailStr, field_validator
 
@@ -113,11 +112,6 @@ class PhotoOut(BaseModel):
     file_path: str
     description: str
     upload_date: datetime
-
-
-class CommentOut(BaseModel):
-    id: int
-    text: str
-    date_posted: datetime
-    photo_id: int
-    user_id: int
+class Tag(BaseModel):
+    id:int
+    tag_name:str
