@@ -1,9 +1,10 @@
 from typing import List
 
 from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
 
 from src.database.models import Photo, Tag, PhotoTag
-from src.schemas import PhotoOut
+from src.schemas import PhotoOut, UserOut
 
 
 async def upload_photo(
@@ -36,4 +37,62 @@ async def upload_photo(
         file_path=new_photo.file_path,
         description=new_photo.description,
         upload_date=new_photo.upload_date,
+    )
+
+
+async def get_photo_by_id(photo_id: int, db: Session) -> PhotoOut | None:
+    """
+    Get photo by id
+
+    Args:
+        photo_id (int): photo id
+        db (Session): database session
+
+    Returns:
+        PhotoOut | None: photo object or None if not found Photo with provided id
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        return None
+    return PhotoOut(
+        id=photo.id,
+        file_path=photo.file_path,
+        description=photo.description,
+        upload_date=photo.upload_date,
+    )
+
+
+def update_photo_description(
+    photo_id: int, new_description: str, current_user: UserOut, db: Session
+):
+    """
+    Update photo description
+
+    Args:
+        photo_id (int): photo id
+        new_description (str): new photo description
+        current_user (UserOut): current authenticated user
+        db (Session): database session
+
+    Returns:
+        PhotoOut: updated photo object
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id).one_or_none()
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    if photo.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to edit this photo",
+        )
+    photo.description = new_description
+    db.commit()
+    db.refresh(photo)
+    return PhotoOut(
+        id=photo.id,
+        file_path=photo.file_path,
+        description=photo.description,
+        upload_date=photo.upload_date,
     )
