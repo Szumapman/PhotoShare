@@ -6,15 +6,17 @@ import cloudinary
 import cloudinary.uploader
 
 from src.database.db import get_db
+from src.repository.photos import get_photo_by_id
 from src.schemas import PhotoOut
 from src.conf.config import settings
 from src.services.auth import auth_service
-from src.database.models import User
+from src.database.models import User, Photo
 from src.repository import photos as photos_repository
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
+# moze ten pszeniesc do config.py?
 cloudinary.config(
     cloud_name=settings.cloudinary_name,
     api_key=settings.cloudinary_api_key,
@@ -43,3 +45,28 @@ async def upload_photo(
         photo_url, current_user.id, description, tags, db
     )
     return new_photo
+
+
+@router.get("/{photo_id}")
+async def download_photo(
+    photo_id: int,
+    current_user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+) -> PhotoOut:
+    """
+    Get a photo by its ID.
+
+    Args:
+        photo_id (int): The photo ID.
+        current_user (User): The current authenticated user.
+        db (Session): Database session.
+
+    Returns:
+        PhotoOut: The photo matching the provided photo ID.
+    """
+    photo = await get_photo_by_id(photo_id, db)
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    return photo

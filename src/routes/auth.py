@@ -196,7 +196,7 @@ async def request_email(
         body (RequestEmail): The email address for which confirmation is requested.
         background_tasks (BackgroundTasks): Background tasks to execute, e.g., sending emails.
         request (Request): The request object.
-        db (Session, optional): The database session.
+        db (Session): The database session.
 
     Returns:
         dict: A message indicating the status of the email confirmation request.

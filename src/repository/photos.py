@@ -37,3 +37,25 @@ async def upload_photo(
         description=new_photo.description,
         upload_date=new_photo.upload_date,
     )
+
+
+async def get_photo_by_id(photo_id: int, db: Session) -> PhotoOut | None:
+    """
+    Get photo by id
+
+    Args:
+        photo_id (int): photo id
+        db (Session): database session
+
+    Returns:
+        PhotoOut | None: photo object or None if not found Photo with provided id
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        return None
+    return PhotoOut(
+        id=photo.id,
+        file_path=photo.file_path,
+        description=photo.description,
+        upload_date=photo.upload_date,
+    )
