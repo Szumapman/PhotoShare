@@ -106,7 +106,7 @@ async def login(
         )
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User is banned"
+            status_code=status.HTTP_403_FORBIDDEN, detail="User is banned"
         )
 
     access_token = await auth_service.create_access_token(data={"sub": user.email})
@@ -220,12 +220,3 @@ async def request_email(
             send_email, user.email, user.username, request.base_url
         )
     return {"message": "Check your email for confirmation."}
-
-
-@router.patch("/set_role", response_model=UserRole)
-async def set_role(
-    body: UserRole,
-    current_user: UserOut = Depends(auth_service.get_current_user),
-    db: Session = Depends(get_db),
-):
-    return await repository_users.set_user_role(current_user, body.email, body.role, db)
