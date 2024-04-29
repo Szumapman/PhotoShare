@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from src.schemas import CommentOut
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.services.auth import Auth
 from src.database.db import get_db
@@ -30,7 +30,15 @@ async def create_comment(
 
     Returns:
         CommentOut: The newly created comment.
+
+    Raises:
+        HTTPException: If the comment is consist of only whitespace.
     """
+    if not comment.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Comment cannot be empty.",
+        )
     new_comment = await add_comment(
         current_user.id,
         photo_id,
