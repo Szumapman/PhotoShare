@@ -1,6 +1,15 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status, Body
+from fastapi import (
+    APIRouter,
+    Depends,
+    UploadFile,
+    File,
+    Form,
+    HTTPException,
+    status,
+    Body,
+)
 from sqlalchemy.orm import Session
 import cloudinary
 import cloudinary.uploader
@@ -49,21 +58,30 @@ async def upload_photo(
 
 @router.patch("/{photo_id}/description")
 async def edit_photo_description(
-        photo_id: int,
-        description: str = Body(..., embed=True),
-        current_user: User = Depends(auth_service.get_current_user),
-        db: Session = Depends(get_db),
+    photo_id: int,
+    description: str = Form(""),
+    current_user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
 ):
     photo = get_photo_by_id(photo_id, db)
     if not photo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
-    if photo.user_id != current_user.id:  # można dodać moderatora, admina.
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="You do not have permission to edit this photo")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    if photo.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to edit this photo",
+        )
 
     updated_photo = update_photo_description(photo_id, description, db)
     if not updated_photo:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Failed to update photo description")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update photo description",
+        )
 
-    return {"message": "Photo description updated successfully", "new_description": description}
+    return {
+        "message": "Photo description updated successfully",
+        "new_description": description,
+    }
