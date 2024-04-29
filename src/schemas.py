@@ -101,11 +101,10 @@ class UserRole(BaseModel):
     Data model for changing user roles.
 
     Attributes:
-        email (str): The email address of the user to change role for.
         role (str): The role of the user.
     """
 
-    email: EmailStr
+    # email: EmailStr
     role: UserRoleValid
 
 
