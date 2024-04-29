@@ -8,21 +8,13 @@ import cloudinary.uploader
 from src.database.db import get_db
 from src.repository.photos import get_photo_by_id
 from src.schemas import PhotoOut
-from src.conf.config import settings
+from src.conf.config import CLOUDINARY_CONFIG
 from src.services.auth import auth_service
-from src.database.models import User, Photo
+from src.database.models import User
 from src.repository import photos as photos_repository
 
 
 router = APIRouter(prefix="/photos", tags=["photos"])
-
-# moze ten pszeniesc do config.py?
-cloudinary.config(
-    cloud_name=settings.cloudinary_name,
-    api_key=settings.cloudinary_api_key,
-    api_secret=settings.cloudinary_api_secret,
-    secure=True,
-)
 
 
 @router.post("/", response_model=PhotoOut)
