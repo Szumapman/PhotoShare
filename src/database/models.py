@@ -19,6 +19,7 @@ class User(Base):
         created_at (datetime): The timestamp indicating when the user account was created.
         avatar (str, optional): The URL or path to the user's avatar image (nullable).
         refresh_token (str, optional): The refresh token associated with the user (nullable).
+        is_active (bool): Flag indicating whether the user is active or baned.
     """
 
     __tablename__ = "users"
@@ -33,7 +34,7 @@ class User(Base):
     created_at = Column(DateTime, default=func.now())
     avatar = Column(String(255), nullable=True)
     refresh_token = Column(String(255), nullable=True)
-
+    is_active = Column(Boolean, default=True)
     photos = relationship("Photo", back_populates="user")
     comments = relationship("Comment", back_populates="user")
 

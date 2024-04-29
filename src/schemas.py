@@ -51,12 +51,14 @@ class UserOut(UserIn):
         password (str): Hashed password.
         role (UserRoleValid): The role of the user.
         avatar (str): The avatar URL of the user.
+        is_active(bool): Whether the user is active or baned.
     """
 
     id: int
     password: str = Field(max_length=255)
     role: UserRoleValid
     avatar: str = "default_avatar.jpg"
+    is_active: bool = True
 
     @field_validator("password")
     def validate_password(cls, password: str) -> str:
@@ -100,11 +102,10 @@ class UserRole(BaseModel):
     Data model for changing user roles.
 
     Attributes:
-        email (str): The email address of the user to change role for.
         role (str): The role of the user.
     """
 
-    email: EmailStr
+    # email: EmailStr
     role: UserRoleValid
 
 

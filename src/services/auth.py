@@ -47,6 +47,10 @@ class Auth:
         db=0,
     )
 
+    async def set_user_in_redis(self, email: str, user: UserOut):
+        self.r.set(f"user:{email}", pickle.dumps(user))
+        self.r.expire(f"user:{email}", 900)
+
     def verify_password(self, plain_password, hashed_password):
         """Verify if the plain password matches the hashed password."""
         return bcrypt.checkpw(
@@ -119,6 +123,10 @@ class Auth:
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+        baned_exception = HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is baned",
+        )
 
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
@@ -135,10 +143,13 @@ class Auth:
             user = await repository_users.get_user_by_email(email, db)
             if user is None:
                 raise credentials_exception
-            self.r.set(f"user:{email}", pickle.dumps(user))
-            self.r.expire(f"user:{email}", 900)
+            if not user.is_active:
+                raise baned_exception
+            await self.set_user_in_redis(email, user)
         else:
             user = pickle.loads(user)
+            if not user.is_active:
+                raise baned_exception
         return user
 
     def create_email_token(self, data: dict):
