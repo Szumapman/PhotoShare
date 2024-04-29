@@ -76,7 +76,7 @@ async def download_photo(
 @router.patch("/{photo_id}/description")
 async def edit_photo_description(
     photo_id: int,
-    description: str = Form(""),
+    description: str = Form(),
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
