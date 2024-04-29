@@ -1,10 +1,10 @@
 from typing import List
-
+from sqlalchemy import Depends
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-
+from src.database.db import get_db
 from src.database.models import Photo, Tag, PhotoTag
-from src.schemas import PhotoOut, UserOut
+from src.schemas import PhotoOut, Tag
 
 
 async def upload_photo(
@@ -19,7 +19,7 @@ async def upload_photo(
     db.commit()
     db.refresh(new_photo)
 
-    for tag_name in set(tags):
+    for tag_name in tags:
         tag_name = tag_name.strip().lower()
         if tag_name:
             tag = db.query(Tag).filter(Tag.tag_name == tag_name).first()
@@ -38,61 +38,31 @@ async def upload_photo(
         description=new_photo.description,
         upload_date=new_photo.upload_date,
     )
-
-
-async def get_photo_by_id(photo_id: int, db: Session) -> PhotoOut | None:
-    """
-    Get photo by id
-
-    Args:
-        photo_id (int): photo id
-        db (Session): database session
-
-    Returns:
-        PhotoOut | None: photo object or None if not found Photo with provided id
-    """
-    photo = db.query(Photo).filter(Photo.id == photo_id).first()
-    if not photo:
-        return None
-    return PhotoOut(
-        id=photo.id,
-        file_path=photo.file_path,
-        description=photo.description,
-        upload_date=photo.upload_date,
-    )
-
-
-def update_photo_description(
-    photo_id: int, new_description: str, current_user: UserOut, db: Session
+async def new_upload_photo(
+    file_path: str, user_id: int, db: Session
 ):
-    """
-    Update photo description
+    new_phot = Photo(
+        file_path=file_path,
 
-    Args:
-        photo_id (int): photo id
-        new_description (str): new photo description
-        current_user (UserOut): current authenticated user
-        db (Session): database session
-
-    Returns:
-        PhotoOut: updated photo object
-    """
-    photo = db.query(Photo).filter(Photo.id == photo_id).one_or_none()
-    if not photo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
-        )
-    if photo.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to edit this photo",
-        )
-    photo.description = new_description
-    db.commit()
-    db.refresh(photo)
-    return PhotoOut(
-        id=photo.id,
-        file_path=photo.file_path,
-        description=photo.description,
-        upload_date=photo.upload_date,
+        user_id=user_id,
     )
+    db.add(new_phot)
+    db.commit()
+    db.refresh(new_phot)
+    return new_phot
+async def edit_tag(user_id: int, tag_id:int, new_tag_name:str, db:Session)-> Tag:
+    tag=db.query(Tag).filter(Tag.id==tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not egsist")
+    if tag.user_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No access")
+    tag.tag_name=new_tag_name
+
+    db.commit()
+    db.refresh(tag)
+    return tag
+
+
+
+
+    return tag
