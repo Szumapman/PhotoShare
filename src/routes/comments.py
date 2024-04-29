@@ -1,44 +1,40 @@
 from sqlalchemy.orm import Session
-from src.database.models import Comment
-from src.schemas import CommentIn, CommentOut
-from fastapi import APIRouter, HTTPException, Depends
+from src.schemas import CommentOut
+from fastapi import APIRouter, Depends
 
 from src.services.auth import Auth
 from src.database.db import get_db
+from src.schemas import UserOut
+from src.repository.comments import add_comment
 
 
 router = APIRouter(prefix="/comments", tags=["comments"])
 auth_service = Auth()
 
 
-@router.post("/photos/{photo_id}/comments/", response_model=CommentOut)
+@router.post("/{photo_id}", response_model=CommentOut)
 async def create_comment(
-    comment_data: CommentIn,
-    current_user: str = Depends(auth_service.get_current_user),
+    photo_id: int,
+    comment: str,
+    current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Creates a new comment associated with a photo.
 
     Args:
-        comment_data (CommentIn): Data for the new comment.
-        current_user (str, optional): Current user's authentication token.
-        db (Session, optional): Database session.
+        photo_id (int): The photo ID to comment on.
+        comment (str): The new comment.
+        current_user (UserOut): Current authenticated user.
+        db (Session): Database session.
 
     Returns:
         CommentOut: The newly created comment.
-
-    Raises:
-        HTTPException: If the user is not authorized.
     """
-
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    new_comment = Comment(
-        photo_id=comment_data.photo_id, user_id=current_user.id, text=comment_data.text
+    new_comment = await add_comment(
+        current_user.id,
+        photo_id,
+        comment,
+        db,
     )
-    db.add(new_comment)
-    db.commit()
-    db.refresh(new_comment)
-
     return new_comment
