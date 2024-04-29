@@ -50,12 +50,14 @@ class UserOut(UserIn):
         password (str): Hashed password.
         role (UserRoleValid): The role of the user.
         avatar (str): The avatar URL of the user.
+        is_active(bool): Whether the user is active or baned.
     """
 
     id: int
     password: str = Field(max_length=255)
     role: UserRoleValid
     avatar: str = "default_avatar.jpg"
+    is_active: bool = True
 
     @field_validator("password")
     def validate_password(cls, password: str) -> str:
