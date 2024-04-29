@@ -18,7 +18,7 @@ async def upload_photo(
     db.commit()
     db.refresh(new_photo)
 
-    for tag_name in tags:
+    for tag_name in set(tags):
         tag_name = tag_name.strip().lower()
         if tag_name:
             tag = db.query(Tag).filter(Tag.tag_name == tag_name).first()
