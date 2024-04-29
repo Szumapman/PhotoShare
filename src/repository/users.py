@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 
 from src.database.models import User
 from src.schemas import UserIn, UserOut
+from src.services.auth import auth_service
 
 
 async def count_users(db: Session):
@@ -147,3 +148,38 @@ async def set_user_role(user: UserOut, email: str, role: str, db: Session) -> Us
         status_code=status.HTTP_403_FORBIDDEN,
         detail=f"Only admin users are allowed to set the role of users",
     )
+
+
+async def set_user_is_active(user_id: int, is_active: bool, db: Session) -> UserOut:
+    """
+    Set the active status of the user with the given user_id in the database.
+
+    Args:
+        user_id (int): The user who wants to set the active status.
+        is_active (bool): Whether the user is active or not.
+        db (Session): The database session.
+
+    Returns:
+        UserOut: The user with the updated active status.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        user.is_active = is_active
+        db.commit()
+        db.refresh(user)
+        user_out = UserOut(
+            id=user_id,
+            username=user.username,
+            password=user.password,
+            email=user.email,
+            role=user.role,
+            avatar=user.avatar,
+            is_active=is_active,
+        )
+        await auth_service.set_user_in_redis(user.email, user_out)
+        return user_out
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id: {user_id} not found",
+        )
