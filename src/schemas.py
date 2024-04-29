@@ -115,14 +115,9 @@ class PhotoOut(BaseModel):
     upload_date: datetime
 
 
-class CommentIn(BaseModel):
-    photo_id: int
-    text: str
-
-
 class CommentOut(BaseModel):
     id: int
-    photo_id: int
     text: str
-    user_id: int
     date_posted: datetime
+    photo_id: int
+    user_id: int
