@@ -1,9 +1,10 @@
 from libgravatar import Gravatar
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from src.database.models import User
-from src.schemas import UserIn, UserOut
+from src.database.models import User, Photo
+from src.schemas import UserIn, UserOut, UserPublicProfile
 from src.services.auth import auth_service
 
 
@@ -187,3 +188,26 @@ async def set_user_is_active(user_id: int, is_active: bool, db: Session) -> User
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id: {user_id} not found",
         )
+
+
+async def get_user_public_profile(user_id: int, db: Session) -> UserPublicProfile:
+    user_with_photo_count = (
+        db.query(User.id, User.username, User.avatar)
+        .filter(User.id == user_id)
+        .outerjoin(Photo, User.id == Photo.user_id)
+        .add_column(func.count(Photo.id).label("photo_count"))
+        .group_by(User.id)
+        .first()
+    )
+    if not user_with_photo_count:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id: {user_id} not found",
+        )
+    user_id, username, avatar, photo_count = user_with_photo_count
+    return UserPublicProfile(
+        id=user_id,
+        username=username,
+        avatar=avatar,
+        photo_count=photo_count,
+    )
