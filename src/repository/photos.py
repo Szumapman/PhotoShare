@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from src.database.models import Photo, Tag, PhotoTag
-from src.schemas import PhotoOut, UserOut
+from src.schemas import PhotoOut, UserOut, UserRoleValid
 
 
 async def upload_photo(
@@ -95,4 +95,36 @@ def update_photo_description(
         file_path=photo.file_path,
         description=photo.description,
         upload_date=photo.upload_date,
+    )
+
+
+async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | None:
+    """
+    Delete a photo from the database if it belongs to the specified user or if the user is administrator.
+
+    Args:
+        photo_id (int): The ID of the photo to be deleted.
+        user (UserOut): An instance of UserOut representing the user performing the deletion.
+        db (Session): The database session.
+
+    Returns:
+        PhotoOut: Returns the deleted photo object.
+
+    Raises:
+        HTTPException: 404 If the photo does not exist.
+        HTTPException: 403 If the user is not administrator or the photo owner.
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    if photo.user_id == user.id or user.role == "admin":
+        print(f"user_id: {user.id}, {user.role}")
+        db.delete(photo)
+        db.commit()
+        return photo
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Only owner of the photo or admin can delete it.",
     )

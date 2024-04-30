@@ -19,7 +19,6 @@ from src.schemas import PhotoOut, UserOut
 from src.conf.config import settings
 from src.conf.config import CLOUDINARY_CONFIG
 from src.services.auth import auth_service
-from src.database.models import User
 from src.repository import photos as photos_repository
 
 
@@ -31,7 +30,7 @@ async def upload_photo(
     file: UploadFile = File(),
     description: str = Form(""),
     tags: list[str] = Form([]),
-    current_user: User = Depends(auth_service.get_current_user),
+    current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
     tags = tags[0].split(",")
@@ -51,7 +50,7 @@ async def upload_photo(
 @router.get("/{photo_id}")
 async def download_photo(
     photo_id: int,
-    current_user: User = Depends(auth_service.get_current_user),
+    current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
     """
@@ -77,7 +76,7 @@ async def download_photo(
 async def edit_photo_description(
     photo_id: int,
     description: str = Form(),
-    current_user: User = Depends(auth_service.get_current_user),
+    current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
     """
@@ -99,3 +98,31 @@ async def edit_photo_description(
             detail="Failed to update photo description",
         )
     return updated_photo
+
+
+@router.delete("/{photo_id}", response_model=PhotoOut)
+async def delete_photo(
+    photo_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserOut = Depends(auth_service.get_current_user),
+):
+    """
+    Delete a photo from the database if it belongs to the authenticated user.
+
+    Args:
+        photo_id (int): The ID of the photo to be deleted.
+        db (Session): The database session.
+        current_user (UserOut): An instance of User representing the authenticated user.
+
+    Returns:
+        PhotoOut: The deleted photo object.
+
+    Raises:
+        HTTPException: If the specified photo is not found in the database.
+    """
+    photo = await photos_repository.delete_photo(photo_id, current_user, db)
+    if photo is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    return photo
