@@ -122,3 +122,20 @@ class CommentOut(BaseModel):
     user_id: int
     date_posted: datetime
     date_updated: datetime | None
+
+
+class UserPublicProfile(BaseModel):
+    """
+    Data model for user public profile.
+
+    Attributes:
+        id (int): The unique identifier of the user.
+        username (str): The username of the user.
+        avatar (str): The avatar URL of the user.
+        photo_count (int): The number of photos uploaded by the user.
+    """
+
+    id: int
+    username: str
+    avatar: str
+    photo_count: int
