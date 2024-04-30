@@ -6,10 +6,9 @@ import cloudinary
 import cloudinary.uploader
 
 from src.database.db import get_db
-from src.schemas import PhotoOut
+from src.schemas import PhotoOut, UserOut
 from src.conf.config import settings
 from src.services.auth import auth_service
-from src.database.models import User
 from src.repository import photos as photos_repository
 
 
@@ -28,7 +27,7 @@ async def upload_photo(
     file: UploadFile = File(),
     description: str = Form(""),
     tags: list[str] = Form(),
-    current_user: User = Depends(auth_service.get_current_user),
+    current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
     tags = tags[0].split(",")
@@ -44,19 +43,20 @@ async def upload_photo(
     )
     return new_photo
 
+
 @router.delete("/{photo_id}", response_model=PhotoOut)
 async def delete_photo(
     photo_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(auth_service.get_current_user)
-    ):
+    current_user: UserOut = Depends(auth_service.get_current_user),
+):
     """
     Delete a photo from the database if it belongs to the authenticated user.
 
     Args:
         photo_id (int): The ID of the photo to be deleted.
         db (Session): The database session.
-        current_user (User): An instance of User representing the authenticated user.
+        current_user (UserOut): An instance of User representing the authenticated user.
 
     Returns:
         PhotoOut: The deleted photo object.
@@ -66,5 +66,7 @@ async def delete_photo(
     """
     photo = await photos_repository.delete_photo(photo_id, current_user, db)
     if photo is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
     return photo
