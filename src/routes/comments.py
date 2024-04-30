@@ -50,13 +50,13 @@ async def create_comment(
     return new_comment
 
 
-@router.put("/{comment_id}", response_model=CommentOut)
+@router.put("/{comment_id}")
 async def update_comment(
     comment_id: int,
     comment_text: str,
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
-):
+) -> dict:
     """
     Updates the content of a comment if the current user is the owner of the comment.
 
@@ -67,7 +67,7 @@ async def update_comment(
         db (Session): Database session.
 
     Returns:
-        CommentOut: The updated comment.
+        dict: Confirmation message on successful update and the updated comment.
     """
     if not comment_text.strip():
         raise HTTPException(
@@ -77,7 +77,7 @@ async def update_comment(
     comment = await comment_repository.update_comment(
         comment_id, comment_text, current_user.id, db
     )
-    return comment
+    return {"Comment deleted": comment}
 
 
 @router.delete("/{comment_id}")
@@ -85,7 +85,7 @@ async def delete_comment(
     comment_id: int,
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
-):
+) -> dict:
     """
     Deletes a comment if the current user is an admin or moderator.
 
@@ -102,8 +102,8 @@ async def delete_comment(
     """
 
     if current_user.role in [UserRoleValid.admin, UserRoleValid.moderator]:
-        message = await comment_repository.delete_comment(comment_id, db)
-        return message
+        comment = await comment_repository.delete_comment(comment_id, db)
+        return {"Comment deleted": comment}
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
