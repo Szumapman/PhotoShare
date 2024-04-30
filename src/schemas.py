@@ -105,7 +105,6 @@ class UserRole(BaseModel):
         role (str): The role of the user.
     """
 
-    # email: EmailStr
     role: UserRoleValid
 
 
