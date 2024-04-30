@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from src.database.models import Photo, Tag, PhotoTag
-from src.schemas import PhotoOut, UserOut, UserRoleValid
+from src.schemas import PhotoOut, UserOut
 
 
 async def upload_photo(

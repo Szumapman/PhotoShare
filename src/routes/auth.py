@@ -8,7 +8,7 @@ from fastapi.requests import Request
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.schemas import UserIn, UserOut, TokenModel, RequestEmail, UserRole
+from src.schemas import UserIn, UserOut, TokenModel, RequestEmail
 from src.repository import users as repository_users
 from src.services.auth import auth_service
 from src.services.email_service import send_email
@@ -65,7 +65,6 @@ async def signup(
     return UserOut(
         id=new_user.id,
         username=new_user.username,
-        password=new_user.password,
         email=new_user.email,
         role=new_user.role,
         avatar=new_user.avatar,

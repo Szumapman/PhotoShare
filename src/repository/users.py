@@ -12,7 +12,7 @@ async def count_users(db: Session):
     return db.query(User).count()
 
 
-async def get_user_by_email(email: str, db: Session) -> UserOut:
+async def get_user_by_email(email: str, db: Session) -> User:
     """
     Retrieve a user from the database by their email address.
     Args:
@@ -25,7 +25,7 @@ async def get_user_by_email(email: str, db: Session) -> UserOut:
     return user
 
 
-async def create_user(body: UserIn, db: Session) -> User:
+async def create_user(body: UserIn, db: Session) -> UserOut:
     """
     Create a new user in the database.
     Args:
@@ -57,7 +57,14 @@ async def create_user(body: UserIn, db: Session) -> User:
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+    return UserOut(
+        id=new_user.id,
+        username=new_user.username,
+        email=new_user.email,
+        role=new_user.role,
+        avatar=new_user.avatar,
+        is_active=new_user.is_active,
+    )
 
 
 async def update_token(user: UserOut, token: str | None, db: Session) -> None:
@@ -118,7 +125,14 @@ async def update_avatar(email, url: str, db: Session) -> UserOut:
     user.avatar = url
     db.commit()
     db.refresh(user)
-    return user
+    return UserOut(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        role=user.role,
+        avatar=user.avatar,
+        is_active=user.is_active,
+    )
 
 
 async def set_user_role(user_id: int, role: str, db: Session) -> UserOut:
@@ -145,7 +159,6 @@ async def set_user_role(user_id: int, role: str, db: Session) -> UserOut:
     user_out = UserOut(
         id=user.id,
         username=user.username,
-        password=user.password,
         email=user.email,
         role=user.role,
         avatar=user.avatar,
@@ -175,7 +188,6 @@ async def set_user_is_active(user_id: int, is_active: bool, db: Session) -> User
         user_out = UserOut(
             id=user.id,
             username=user.username,
-            password=user.password,
             email=user.email,
             role=user.role,
             avatar=user.avatar,

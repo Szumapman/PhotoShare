@@ -18,7 +18,6 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
             id=1,
             username="user",
             email="test@email.com",
-            password="testPass1",
             role="standard",
         )
 

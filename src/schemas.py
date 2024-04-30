@@ -40,31 +40,25 @@ class UserIn(BaseModel):
         return password
 
 
-class UserOut(UserIn):
+class UserOut(BaseModel):
     """
     Data model for retrieving users.
-    The `UserOut` model inherits from the `UserIn` model, overwrite password field, and it's validator
-    and adds additional fields: `id`, 'role', and 'avatar'
 
     Attributes:
         id (int): The unique identifier of the user.
-        password (str): Hashed password.
+        username (str): The username of the user. Must be between 4 and 16 characters.
+        email (str): The email address of the user.
         role (UserRoleValid): The role of the user.
         avatar (str): The avatar URL of the user.
         is_active(bool): Whether the user is active or baned.
     """
 
     id: int
-    password: str = Field(max_length=255)
+    username: str
+    email: EmailStr
     role: UserRoleValid
     avatar: str = "default_avatar.jpg"
     is_active: bool = True
-
-    @field_validator("password")
-    def validate_password(cls, password: str) -> str:
-        if len(password) > 255:
-            raise ValueError("Password hash is too long, check hash method.")
-        return password
 
     class Config:
         from_attributes = True

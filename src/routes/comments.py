@@ -8,7 +8,6 @@ from src.services.auth import Auth
 from src.database.db import get_db
 from src.schemas import UserOut, UserRoleValid
 from src.repository import comments as comment_repository
-from src.database.models import Comment
 
 router = APIRouter(prefix="/comments", tags=["comments"])
 auth_service = Auth()

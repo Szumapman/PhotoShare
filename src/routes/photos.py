@@ -15,7 +15,6 @@ import cloudinary.uploader
 
 from src.database.db import get_db
 from src.schemas import PhotoOut, UserOut
-from src.conf.config import settings
 from src.conf.config import CLOUDINARY_CONFIG
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
