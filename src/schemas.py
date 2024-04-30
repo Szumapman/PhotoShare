@@ -108,6 +108,10 @@ class PhotoOut(BaseModel):
     description: str
     upload_date: datetime
 
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 
 class CommentOut(BaseModel):
     id: int

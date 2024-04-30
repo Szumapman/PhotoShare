@@ -1,10 +1,12 @@
-from typing import List
-
+from typing import List, Optional
+import logging
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from src.database.models import Photo, Tag, PhotoTag
 from src.schemas import PhotoOut, UserOut
+from icecream import ic
 
 
 async def upload_photo(
@@ -127,3 +129,34 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Only owner of the photo or admin can delete it.",
     )
+
+
+async def search_photos(query: Optional[str], sort_by: str, db: Session) -> List[PhotoOut]:
+    """
+    Search and sort photos based on the query and sort criteria.
+
+    Args:
+        query (str | None): Keywords to search in photo descriptions or tags.
+        sort_by (str): Sorting criterion, either 'date' or 'rating'.
+        db (Session): Database session.
+
+    Returns:
+        List[PhotoOut]: List of photos matching the search criteria.
+    """
+    base_query = db.query(Photo).join(Photo.tags)
+
+    if query:  # Filter only if query is not None and not empty
+        base_query = base_query.filter(
+            or_(Photo.description.ilike(f"%{query}%"), Tag.tag_name.ilike(f"%{query}%"))
+        ).distinct()
+
+    if sort_by == "date":
+        base_query = base_query.order_by(Photo.upload_date.desc())
+    # elif sort_by == "rating":
+    #     base_query = base_query.order_by(Photo.rating.desc())
+
+    photos = base_query.all()
+    if not photos:
+        return []
+
+    return [PhotoOut.from_orm(photo) for photo in photos]
