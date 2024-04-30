@@ -60,7 +60,9 @@ async def update_comment(
     """
     comment = db.query(Comment).filter(Comment.id == comment_id).first()
     if not comment:
-        raise HTTPException(status_code=404, detail="Comment not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
+        )
     if comment.user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -93,4 +95,11 @@ async def delete_comment(comment_id: int, db: Session):
         )
     db.delete(comment)
     db.commit()
-    return {"message": "Comment deleted successfully"}
+    return CommentOut(
+        id=comment.id,
+        text=comment.text,
+        user_id=comment.user_id,
+        photo_id=comment.photo_id,
+        date_posted=comment.date_posted,
+        date_updated=comment.date_updated,
+    )
