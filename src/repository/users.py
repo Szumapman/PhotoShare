@@ -223,3 +223,37 @@ async def get_user_public_profile(user_id: int, db: Session) -> UserPublicProfil
         avatar=avatar,
         photo_count=photo_count,
     )
+
+
+async def update_current_user_profile(
+    user: UserOut, new_user_data: UserIn, db: Session
+) -> UserOut:
+    """
+    Update the current user in the database.
+
+    Args:
+        user (UserOut): The user to update.
+        new_user_data (UserIn): New data for the user's profile.
+        db (Session): The database session.
+
+    Returns:
+        UserOut: The updated user.
+    """
+    exist_user = db.query(User).filter(User.email == new_user_data.email).first()
+    if exist_user and exist_user.id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Account with {new_user_data.email} already exists.",
+        )
+    updated_user = db.query(User).filter(User.id == user.id).first()
+    if updated_user:
+        updated_user.username = new_user_data.username
+        updated_user.email = new_user_data.email
+        updated_user.password = auth_service.get_password_hash(new_user_data.password)
+        db.commit()
+        db.refresh(updated_user)
+        return updated_user
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"User with id: {user.id} not found",
+    )
