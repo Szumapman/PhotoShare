@@ -46,12 +46,12 @@ async def upload_photo(
     return new_photo
 
 
-@router.get("/{photo_id}")
+@router.get("/{photo_id}", response_model=PhotoOut)
 async def get_photo(
     photo_id: int,
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
-) -> PhotoOut:
+):
     """
     Get a photo by its ID.
 
@@ -63,7 +63,7 @@ async def get_photo(
     Returns:
         PhotoOut: The photo matching the provided photo ID.
     """
-    photo = await get_photo_by_id(photo_id, db)
+    photo = await photos_repository.get_photo_by_id(photo_id, db)
     if not photo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
@@ -96,13 +96,13 @@ async def download_photo(
     return photo.file_path
 
 
-@router.patch("/description/{photo_id}")
+@router.patch("/description/{photo_id}", response_model=PhotoOut)
 async def edit_photo_description(
     photo_id: int,
     description: str = Form(),
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
-) -> dict:
+):
     """
     Edit photo description
 
@@ -113,7 +113,7 @@ async def edit_photo_description(
         db (Session): Database
 
     Returns:
-        dict: with confirmation that photo description was updated and updated photo object
+        PhotoOut: The updated photo object
     """
     updated_photo = photos_repository.update_photo_description(
         photo_id, description, current_user, db
@@ -123,15 +123,15 @@ async def edit_photo_description(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update photo description",
         )
-    return {"Photo description updated": updated_photo}
+    return updated_photo
 
 
-@router.delete("/{photo_id}")
+@router.delete("/{photo_id}", response_model=PhotoOut)
 async def delete_photo(
     photo_id: int,
     db: Session = Depends(get_db),
     current_user: UserOut = Depends(auth_service.get_current_user),
-) -> dict:
+):
     """
     Delete a photo from the database if it belongs to the authenticated user.
 
@@ -141,7 +141,7 @@ async def delete_photo(
         current_user (UserOut): An instance of User representing the authenticated user.
 
     Returns:
-        dict: with confirmation that photo was deleted and deleted photo object.
+        PhotoOut: The deleted photo object.
 
     Raises:
         HTTPException: If the specified photo is not found in the database.
@@ -151,4 +151,4 @@ async def delete_photo(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
-    return {"Photo deleted": photo}
+    return photo
