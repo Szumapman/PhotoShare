@@ -125,4 +125,5 @@ class CommentOut(BaseModel):
     photo_id: int
     text: str
     user_id: int
-    date_posted: datetime = datetime.now()
+    date_posted: datetime
+    date_updated: datetime
