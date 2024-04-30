@@ -118,8 +118,7 @@ class PhotoOut(BaseModel):
 class CommentOut(BaseModel):
     id: int
     text: str
-    date_posted: datetime
     photo_id: int
     user_id: int
     date_posted: datetime
-    date_updated: datetime
+    date_updated: datetime | None
