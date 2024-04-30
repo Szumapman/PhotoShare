@@ -87,6 +87,7 @@ class Comment(Base):
     id = Column(Integer, primary_key=True)
     text = Column(String(255), nullable=False)
     date_posted = Column(DateTime, default=func.now())
+    date_updated = Column(DateTime, onupdate=func.now())
 
     photo_id = Column(Integer, ForeignKey("photos.id"))
     user_id = Column(Integer, ForeignKey("users.id"))

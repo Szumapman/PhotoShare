@@ -121,3 +121,5 @@ class CommentOut(BaseModel):
     date_posted: datetime
     photo_id: int
     user_id: int
+    date_posted: datetime
+    date_updated: datetime
