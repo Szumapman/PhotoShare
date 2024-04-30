@@ -141,7 +141,17 @@ async def set_user_role(user_id: int, role: str, db: Session) -> UserOut:
     user.role = role
     db.commit()
     db.refresh(user)
-    return user
+    user_out = UserOut(
+        id=user.id,
+        username=user.username,
+        password=user.password,
+        email=user.email,
+        role=user.role,
+        avatar=user.avatar,
+        is_active=user.is_active,
+    )
+    await auth_service.set_user_in_redis(user.email, user_out)
+    return user_out
 
 
 async def set_user_is_active(user_id: int, is_active: bool, db: Session) -> UserOut:
@@ -162,7 +172,7 @@ async def set_user_is_active(user_id: int, is_active: bool, db: Session) -> User
         db.commit()
         db.refresh(user)
         user_out = UserOut(
-            id=user_id,
+            id=user.id,
             username=user.username,
             password=user.password,
             email=user.email,
