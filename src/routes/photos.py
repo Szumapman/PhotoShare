@@ -14,7 +14,6 @@ import cloudinary
 import cloudinary.uploader
 
 from src.database.db import get_db
-from src.repository.photos import get_photo_by_id, update_photo_description
 from src.schemas import PhotoOut, UserOut
 from src.conf.config import settings
 from src.conf.config import CLOUDINARY_CONFIG
@@ -48,7 +47,7 @@ async def upload_photo(
 
 
 @router.get("/{photo_id}")
-async def download_photo(
+async def get_photo(
     photo_id: int,
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
@@ -72,13 +71,38 @@ async def download_photo(
     return photo
 
 
-@router.patch("/{photo_id}/description")
+@router.get("/download/{photo_id}")
+async def download_photo(
+    photo_id: int,
+    current_user: UserOut = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+) -> str:
+    """
+    Download a photo by its ID.
+
+    Args:
+        photo_id (int): The photo ID.
+        current_user (User): The current authenticated user.
+        db (Session): Database session.
+
+    Returns:
+        str: with url to the photo.
+    """
+    photo = await photos_repository.get_photo_by_id(photo_id, db)
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    return photo.file_path
+
+
+@router.patch("/description/{photo_id}")
 async def edit_photo_description(
     photo_id: int,
     description: str = Form(),
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
-) -> PhotoOut:
+) -> dict:
     """
     Edit photo description
 
@@ -89,23 +113,25 @@ async def edit_photo_description(
         db (Session): Database
 
     Returns:
-        PhotoOut: Updated photo object
+        dict: with confirmation that photo description was updated and updated photo object
     """
-    updated_photo = update_photo_description(photo_id, description, current_user, db)
+    updated_photo = photos_repository.update_photo_description(
+        photo_id, description, current_user, db
+    )
     if not updated_photo:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update photo description",
         )
-    return updated_photo
+    return {"Photo description updated": updated_photo}
 
 
-@router.delete("/{photo_id}", response_model=PhotoOut)
+@router.delete("/{photo_id}")
 async def delete_photo(
     photo_id: int,
     db: Session = Depends(get_db),
     current_user: UserOut = Depends(auth_service.get_current_user),
-):
+) -> dict:
     """
     Delete a photo from the database if it belongs to the authenticated user.
 
@@ -115,7 +141,7 @@ async def delete_photo(
         current_user (UserOut): An instance of User representing the authenticated user.
 
     Returns:
-        PhotoOut: The deleted photo object.
+        dict: with confirmation that photo was deleted and deleted photo object.
 
     Raises:
         HTTPException: If the specified photo is not found in the database.
@@ -125,4 +151,4 @@ async def delete_photo(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
-    return photo
+    return {"Photo deleted": photo}
