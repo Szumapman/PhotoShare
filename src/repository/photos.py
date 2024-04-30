@@ -120,7 +120,6 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
     if photo.user_id == user.id or user.role == "admin":
-        print(f"user_id: {user.id}, {user.role}")
         db.delete(photo)
         db.commit()
         return photo
