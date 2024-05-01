@@ -75,3 +75,8 @@ CLOUDINARY_CONFIG = cloudinary.config(
     api_secret=settings.cloudinary_api_secret,
     secure=True,
 )
+
+CLOUDINARY_PARAMS = {
+    "photo_public_id_prefix": "PhotoShare",
+    "qr_public_id_prefix": "PhotoShare/qr-codes",
+}
