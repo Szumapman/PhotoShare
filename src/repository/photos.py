@@ -144,7 +144,7 @@ async def search_photos(query: Optional[str], sort_by: str, db: Session) -> List
     """
     base_query = db.query(Photo).join(Photo.tags)
 
-    if query:  # Filter only if query is not None and not empty
+    if query:
         base_query = base_query.filter(
             or_(Photo.description.ilike(f"%{query}%"), Tag.tag_name.ilike(f"%{query}%"))
         ).distinct()
