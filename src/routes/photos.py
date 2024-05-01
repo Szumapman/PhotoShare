@@ -145,4 +145,5 @@ async def delete_photo(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
+    await photos_services.delete_from_cloudinary(photo)
     return photo
