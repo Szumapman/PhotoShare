@@ -6,7 +6,6 @@ from fastapi import HTTPException, status
 
 from src.database.models import Photo, Tag, PhotoTag
 from src.schemas import PhotoOut, UserOut
-from icecream import ic
 
 
 async def upload_photo(
