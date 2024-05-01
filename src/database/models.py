@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey, JSON
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.orm import relationship, declarative_base
 
@@ -24,7 +24,7 @@ class User(Base):
 
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    username = Column(String(255), nullable=False)
+    username = Column(String(255), nullable=False, unique=True)
     email = Column(String, unique=True, index=True, nullable=False)
     confirmed = Column(Boolean, default=False)
     role = Column(
@@ -58,7 +58,9 @@ class Photo(Base):
     __tablename__ = "photos"
     id = Column(Integer, primary_key=True)
     file_path = Column(String(255), nullable=False)
-    description = Column(String(500), nullable=False)
+    qr_path = Column(String(255), nullable=False)
+    transformation = Column(JSON, nullable=True)
+    description = Column(String(1000), nullable=False)
     upload_date = Column(DateTime, default=func.now())
     user_id = Column(Integer, ForeignKey("users.id"))
 
@@ -85,7 +87,7 @@ class Comment(Base):
 
     __tablename__ = "comments"
     id = Column(Integer, primary_key=True)
-    text = Column(String(255), nullable=False)
+    text = Column(String(1000), nullable=False)
     date_posted = Column(DateTime, default=func.now())
     date_updated = Column(DateTime, onupdate=func.now())
 
@@ -108,7 +110,7 @@ class Tag(Base):
 
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True)
-    tag_name = Column(String(50), nullable=False)
+    tag_name = Column(String(50), nullable=False, unique=True)
 
     photos = relationship("Photo", secondary="photo_tags", back_populates="tags")
 
