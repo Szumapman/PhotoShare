@@ -30,7 +30,6 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
         )
         self.session.query().filter().first.return_value = photo
         result = await photos_repository.get_photo_by_id(photo_id=1, db=self.session)
-        print(result.file_path)
         self.assertEqual(result, photo)
 
     async def test_get_photo_not_found(self):
