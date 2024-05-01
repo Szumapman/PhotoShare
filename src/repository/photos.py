@@ -8,10 +8,30 @@ from src.schemas import PhotoOut, UserOut
 
 
 async def upload_photo(
-    file_path: str, user_id: int, description: str, tags: List[str], db: Session
-):
+    file_path: str,
+    qr_code_url: str,
+    user_id: int,
+    description: str,
+    tags: List[str],
+    db: Session,
+) -> PhotoOut:
+    """
+    Upload new photo to database
+
+    Args:
+         file_path (str): photo url
+         qr_code_url (str): qrcode url
+         user_id (int): user id
+         description (str): description
+         tags (List[str]): tags
+         db (Session): database session
+
+    Returns:
+        PhotoOut: PhotoOut object
+    """
     new_photo = Photo(
         file_path=file_path,
+        qr_path=qr_code_url,
         description=description,
         user_id=user_id,
     )
@@ -35,6 +55,8 @@ async def upload_photo(
     return PhotoOut(
         id=new_photo.id,
         file_path=new_photo.file_path,
+        qr_path=new_photo.qr_path,
+        transformation=new_photo.transformation,
         description=new_photo.description,
         upload_date=new_photo.upload_date,
     )
@@ -90,12 +112,7 @@ def update_photo_description(
     photo.description = new_description
     db.commit()
     db.refresh(photo)
-    return PhotoOut(
-        id=photo.id,
-        file_path=photo.file_path,
-        description=photo.description,
-        upload_date=photo.upload_date,
-    )
+    return photo
 
 
 async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | None:
