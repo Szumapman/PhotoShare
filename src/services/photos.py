@@ -5,7 +5,12 @@ from fastapi import HTTPException, status, File
 import cloudinary
 import cloudinary.uploader
 
-from src.conf.config import CLOUDINARY_CONFIG
+from src.conf.config import CLOUDINARY_CONFIG, CLOUDINARY_PARAMS
+from src.schemas import PhotoOut
+
+
+async def _get_cloudinary_public_ip(url: str) -> str:
+    return url.split("/")[-1].split(".")[0]
 
 
 async def upload_photo(file: File) -> str:
@@ -20,10 +25,19 @@ async def upload_photo(file: File) -> str:
     """
     upload_result = cloudinary.uploader.upload(
         file.file,
-        public_id_prefix="PhotoShare",
+        public_id_prefix=CLOUDINARY_PARAMS["photo_public_id_prefix"],
         overwrite=True,
     )
     return upload_result["url"]
+
+
+async def delete_from_cloudinary(photo: PhotoOut):
+    photo_public_id = f"{CLOUDINARY_PARAMS['photo_public_id_prefix']}/{await _get_cloudinary_public_ip(photo.file_path)}"
+    cloudinary.uploader.destroy(photo_public_id, invalidate=True)
+    print(f"Deleted {photo_public_id}")
+    qrcode_public_id = f"{CLOUDINARY_PARAMS['qr_public_id_prefix']}/{await _get_cloudinary_public_ip(photo.qr_path)}"
+    cloudinary.uploader.destroy(qrcode_public_id, invalidate=True)
+    print(f"Deleted {qrcode_public_id}")
 
 
 async def create_qr_code(photo_url: str) -> str:
@@ -43,7 +57,7 @@ async def create_qr_code(photo_url: str) -> str:
 
         qr_upload = cloudinary.uploader.upload(
             qr_buffer,
-            public_id_prefix="PhotoShare/qr-codes",
+            public_id_prefix=CLOUDINARY_PARAMS["qr_public_id_prefix"],
             overwrite=True,
         )
         qr_url = qr_upload["url"]
