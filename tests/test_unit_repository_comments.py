@@ -1,8 +1,12 @@
 import unittest
+from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
 from src.database.models import Comment
 from src.repository.comments import add_comment, update_comment, delete_comment
+from src.schemas import CommentOut, UserOut
 
 
 class TestComments(unittest.TestCase):
@@ -27,7 +31,7 @@ class TestComments(unittest.TestCase):
 
     @patch("src.database.models.Comment")
     @patch("src.database.db.get_db")
-    async def test_add_comment_invalid_text(self, mock_db, mock_comment):
+    async def test_add_comment_invalid_text(self, mock_db):
         user_id = 1
         photo_id = 1
         text = None
@@ -41,15 +45,15 @@ class TestComments(unittest.TestCase):
         text = "Updated comment"
         user_id = 1
         mock_comment.return_value = Comment(
-            id=comment_id, user_id=user_id, photo_id=1, text="Test comment"
+            id=comment_id, user_id=user_id, photo_id=1, text=text
         )
         mock_db.query().filter().first.return_value = mock_comment
-        mock_db.commit = MagicMock()
-        mock_db.refresh = MagicMock()
+        # mock_db.commit = MagicMock()
+        # mock_db.refresh = MagicMock()
 
         result = await update_comment(comment_id, text, user_id, mock_db)
 
-        self.assertIsNotNone(result, text)
+        self.assertIsNotNone(result)
         self.assertEqual(result.text, text)
 
     @patch("src.database.models.Comment")
@@ -60,7 +64,7 @@ class TestComments(unittest.TestCase):
             id=comment_id, user_id=1, photo_id=1, text="Test comment"
         )
         mock_db.query().filter().first.return_value = mock_comment_instance
-        mock_db.commit = MagicMock()
+        # mock_db.commit = MagicMock()
 
         result = await delete_comment(comment_id, mock_db)
 
