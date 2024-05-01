@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import (
     APIRouter,
     Depends,
@@ -10,15 +8,12 @@ from fastapi import (
     status,
 )
 from sqlalchemy.orm import Session
-import cloudinary
-import cloudinary.uploader
 
 from src.database.db import get_db
 from src.schemas import PhotoOut, UserOut
-from src.conf.config import CLOUDINARY_CONFIG
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
-
+from src.services import photos as photos_services
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
@@ -37,10 +32,10 @@ async def upload_photo(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Too many tags provided. You can use max of 5 tags.",
         )
-    upload_result = cloudinary.uploader.upload(file.file)
-    photo_url = upload_result["url"]
+    photo_url = await photos_services.upload_photo(file)
+    qr_code_url = await photos_services.create_qr_code(photo_url)
     new_photo = await photos_repository.upload_photo(
-        photo_url, current_user.id, description, tags, db
+        photo_url, qr_code_url, current_user.id, description, tags, db
     )
     return new_photo
 
