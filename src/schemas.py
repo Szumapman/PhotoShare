@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import List
+from typing import List, Dict
 
 from pydantic import BaseModel, Field, EmailStr, field_validator
 
@@ -103,10 +103,27 @@ class UserRole(BaseModel):
 
 
 class PhotoOut(BaseModel):
+    """
+    Data model for retrieving photos.
+
+    Attributes:
+        id (int): The unique identifier of the photo.
+        file_path (str): The url to the photo.
+        qr_path (str): The url to the qr code leading to the photo.
+        transformation (Dict[str, str]): The transformation of the photo.
+        description (str): The description of the photo.
+        upload_date (datetime): The date the photo was uploaded.
+    """
+
     id: int
     file_path: str
+    qr_path: str
+    transformation: Dict[str, str] | None = None
     description: str
     upload_date: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class CommentOut(BaseModel):
@@ -116,6 +133,9 @@ class CommentOut(BaseModel):
     user_id: int
     date_posted: datetime
     date_updated: datetime | None
+
+    class Config:
+        from_attributes = True
 
 
 class UserPublicProfile(BaseModel):
@@ -133,3 +153,6 @@ class UserPublicProfile(BaseModel):
     username: str
     avatar: str
     photo_count: int
+
+    class Config:
+        from_attributes = True
