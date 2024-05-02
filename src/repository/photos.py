@@ -38,7 +38,6 @@ async def upload_photo(
     )
     db.add(new_photo)
     db.commit()
-    db.refresh(new_photo)
 
     for tag_name in set(tags):
         tag_name = tag_name.strip().lower()
@@ -52,7 +51,7 @@ async def upload_photo(
             photo_tag = PhotoTag(photo_id=new_photo.id, tag_id=tag.id)
             db.add(photo_tag)
     db.commit()
-
+    db.refresh(new_photo)
     return PhotoOut(
         id=new_photo.id,
         file_path=new_photo.file_path,
