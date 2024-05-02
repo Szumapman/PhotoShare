@@ -8,6 +8,7 @@ from src.services.auth import Auth
 from src.database.db import get_db
 from src.schemas import UserOut, UserRoleValid
 from src.repository import comments as comment_repository
+from src.conf.config import MAX_COMMENT_LENGTH
 
 router = APIRouter(prefix="/comments", tags=["comments"])
 auth_service = Auth()
@@ -33,12 +34,18 @@ async def create_comment(
         CommentOut: The newly created comment.
 
     Raises:
-        HTTPException: If the comment is consist of only whitespace.
+        HTTPException: If the comment is consist of only whitespace or comment is too long.
     """
-    if not comment.strip():
+    comment = comment.strip()
+    if not comment:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Comment cannot be empty.",
+        )
+    if len(comment) > MAX_COMMENT_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Comment cannot be longer than {MAX_COMMENT_LENGTH} characters.",
         )
     new_comment = await comment_repository.add_comment(
         current_user.id,
