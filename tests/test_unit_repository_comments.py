@@ -1,12 +1,11 @@
 import unittest
-from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
 
 from src.database.models import Comment
 from src.repository.comments import add_comment, update_comment, delete_comment
-from src.schemas import CommentOut, UserOut
 
 
 class TestComments(unittest.TestCase):
@@ -35,8 +34,35 @@ class TestComments(unittest.TestCase):
         user_id = 1
         photo_id = 1
         text = None
+
+        mock_db.query.return_value.filter.return_value.first.return_value = None
         with self.assertRaises(ValueError):
             await add_comment(user_id, photo_id, text, mock_db)
+
+    @patch("src.database.models.Comment")
+    @patch("src.database.db.get_db")
+    async def test_add_comment_nonexistent_photo(self, mock_db):
+        user_id = 1
+        photo_id = 999
+        text = "Test comment"
+
+        mock_db.query.return_value.filter.return_value.first.return_value = None
+        with pytest.raises(HTTPException) as excinfo:
+            add_comment(user_id, photo_id, text, db=mock_db)
+        assert excinfo.value.status_code == status.HTTP_404_NOT_FOUND
+        assert excinfo.value.detail == "Photo with id 999 does not exist."
+
+    @patch("src.database.models.Comment")
+    @patch("src.database.db.get_db")
+    async def test_add_comment_unauthenticated_user(self, mock_db):
+        user_id = None
+        photo_id = 1
+        text = "Test comment"
+
+        with pytest.raises(HTTPException) as excinfo:
+            add_comment(user_id, photo_id, text, db=mock_db)
+        assert excinfo.value.status_code == status.HTTP_401_UNAUTHORIZED
+
 
     @patch("src.database.models.Comment")
     @patch("src.database.db.get_db")
@@ -48,13 +74,66 @@ class TestComments(unittest.TestCase):
             id=comment_id, user_id=user_id, photo_id=1, text=text
         )
         mock_db.query().filter().first.return_value = mock_comment
-        # mock_db.commit = MagicMock()
-        # mock_db.refresh = MagicMock()
-
         result = await update_comment(comment_id, text, user_id, mock_db)
-
         self.assertIsNotNone(result)
         self.assertEqual(result.text, text)
+
+    @patch("src.database.models.Comment")
+    @patch("src.database.db.get_db")
+    async def test_update_comment_invalid_text(self, mock_db):
+        comment_id = 1
+        text = ""
+        user_id = 1
+
+        mock_db.query.return_value.filter.return_value.first.return_value = None
+        with pytest.raises(HTTPException) as excinfo:
+            update_comment(comment_id, text, user_id, db=mock_db)
+        assert excinfo.value.status_code == status.HTTP_400_BAD_REQUEST
+
+    @patch("src.database.models.Comment")
+    @patch("src.database.db.get_db")
+    async def test_update_comment_unauthenticated_user(self, mock_db):
+        comment_id= 1
+        text= "Updated comment"
+        user_id= None
+
+        mock_db.query.return_value.filter.return_value.first.return_value = None
+
+        with pytest.raises(HTTPException) as excinfo:
+            update_comment(comment_id, text, user_id, db=mock_db)
+        assert excinfo.value.status_code == status.HTTP_400_BAD_REQUEST
+
+    @patch("src.database.models.Comment")
+    @patch("src.database.db.get_db")
+    async def test_update_comment_other_user_comment(self, mock_db):
+        logged_in_user_id = 1
+        other_user_comment = MagicMock()
+        other_user_comment.user_id = 2
+
+        comment_id = 1
+        text = "Updated comment"
+        user_id = logged_in_user_id
+
+        mock_db.query.return_value.filter.return_value.first.return_value = (
+            other_user_comment
+        )
+        with pytest.raises(HTTPException) as excinfo:
+            update_comment(comment_id, text, user_id, db=mock_db)
+        assert excinfo.value.status_code == status.HTTP_403_FORBIDDEN
+        assert excinfo.value.detail == "Only the owner can update the comment"
+
+    @patch("src.database.models.Comment")
+    @patch("src.database.db.get_db")
+    async def test_update_nonexistent_comment(self, mock_db):
+        comment_id = 999
+        text = "Updated comment"
+        user_id = 1
+
+        mock_db.query.return_value.filter.return_value.first.return_value = None
+        with pytest.raises(HTTPException) as excinfo:
+            update_comment(comment_id, text, user_id, db=mock_db)
+        assert excinfo.value.status_code == status.HTTP_404_NOT_FOUND
+        assert excinfo.value.detail == "Comment not found"
 
     @patch("src.database.models.Comment")
     @patch("src.database.db.get_db")
@@ -64,10 +143,7 @@ class TestComments(unittest.TestCase):
             id=comment_id, user_id=1, photo_id=1, text="Test comment"
         )
         mock_db.query().filter().first.return_value = mock_comment_instance
-        # mock_db.commit = MagicMock()
-
         result = await delete_comment(comment_id, mock_db)
-
         self.assertEqual(result.id, comment_id)
         self.assertEqual(result.text, mock_comment_instance.text)
         self.assertEqual(result.user_id, mock_comment_instance.user_id)
@@ -75,21 +151,22 @@ class TestComments(unittest.TestCase):
 
     @patch("src.database.models.Comment")
     @patch("src.database.db.get_db")
-    async def test_delete_comment_already_deleted(self, mock_db):
+    async def test_delete_comment_nonexistent_comment(self, mock_db):
         comment_id = 1
-        mock_db.query().filter().first.return_value = None
-        with self.assertRaises(HTTPException) as cm:
-            await delete_comment(comment_id, mock_db)
-        self.assertEqual(cm.exception.status_code, status.HTTP_404_NOT_FOUND)
+
+        mock_db.query.return_value.filter.return_value.first.return_value = None
+        with pytest.raises(HTTPException) as excinfo:
+            update_comment(comment_id, db=mock_db)
+        assert excinfo.value.status_code == status.HTTP_404_NOT_FOUND
+        assert excinfo.value.detail == "Comment not found"
 
     @patch("src.database.models.Comment")
     @patch("src.database.db.get_db")
-    async def test_delete_comment_not_owner(self, mock_db, mock_comment):
+    async def test_delete_comment_standard_user(self, mock_db):
+        user_id = 1
         comment_id = 1
-        mock_comment_instance = mock_comment(
-            id=comment_id, user_id=999, photo_id=1, text="Test comment"
-        )  # nie bardzo łapię skąd wiemy, że nie jest właścicielem
-        mock_db.query().filter().first.return_value = mock_comment_instance
-        with self.assertRaises(HTTPException) as cm:
-            await delete_comment(comment_id, mock_db)
-        self.assertEqual(cm.exception.status_code, status.HTTP_403_FORBIDDEN)
+
+        mock_db.query.return_value.filter.return_value.first.return_value = None
+        with pytest.raises(HTTPException) as excinfo:
+            delete_comment(comment_id, db=mock_db)
+        assert excinfo.value.status_code == status.HTTP_403_FORBIDDEN

@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
-from src.database.models import Comment
+from src.database.models import Comment, Photo
 from src.schemas import CommentOut, UserOut
 
 
@@ -22,6 +22,12 @@ async def add_comment(
         CommentOut: The newly created Comment object.
 
     """
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Photo with id {} does not exist".format(photo_id),
+        )
     new_comment = Comment(
         text=text,
         photo_id=photo_id,
