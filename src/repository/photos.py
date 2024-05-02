@@ -76,12 +76,7 @@ async def get_photo_by_id(photo_id: int, db: Session) -> PhotoOut | None:
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
         return None
-    return PhotoOut(
-        id=photo.id,
-        file_path=photo.file_path,
-        description=photo.description,
-        upload_date=photo.upload_date,
-    )
+    return photo
 
 
 def update_photo_description(
