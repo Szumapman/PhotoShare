@@ -14,7 +14,7 @@ from src.schemas import PhotoOut, UserOut, TransformationParameters
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
 from src.services import photos as photos_services
-from src.conf.config import MAX_DESCRIPTION_LENGTH, MAX_TAG_NAME_LENGTH
+from src.conf.constant import MAX_DESCRIPTION_LENGTH, MAX_TAG_NAME_LENGTH
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
