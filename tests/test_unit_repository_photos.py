@@ -25,6 +25,7 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
         photo = PhotoOut(
             id=1,
             file_path="test_file_path",
+            qr_path="test_qr_path",
             description="test",
             upload_date=datetime.now(),
         )
