@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
 from src.database.models import Comment
-from src.schemas import CommentOut, UserOut
+from src.schemas import CommentOut
 
 
 async def add_comment(
@@ -20,7 +20,6 @@ async def add_comment(
 
     Returns:
         CommentOut: The newly created Comment object.
-
     """
     new_comment = Comment(
         text=text,
