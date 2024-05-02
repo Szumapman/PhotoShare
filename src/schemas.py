@@ -156,3 +156,10 @@ class UserPublicProfile(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class TransformationParameters(BaseModel):
+    width: int | None = None
+    height: int | None = None
+    crop: str | None = None
+    effect: str | None = None
