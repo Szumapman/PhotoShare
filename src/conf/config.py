@@ -69,6 +69,7 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+
 CLOUDINARY_CONFIG = cloudinary.config(
     cloud_name=settings.cloudinary_name,
     api_key=settings.cloudinary_api_key,
@@ -80,7 +81,3 @@ CLOUDINARY_PARAMS = {
     "photo_public_id_prefix": "PhotoShare",
     "qr_public_id_prefix": "PhotoShare/qr-codes",
 }
-
-MAX_DESCRIPTION_LENGTH = 1000
-MAX_TAG_NAME_LENGTH = 50
-MAX_COMMENT_LENGTH = 1000
