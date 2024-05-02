@@ -118,7 +118,7 @@ class PhotoOut(BaseModel):
     id: int
     file_path: str
     qr_path: str
-    transformation: Dict[str, str] | None = None
+    transformation: Dict[str, list] | None = None
     description: str
     upload_date: datetime
 
@@ -159,7 +159,23 @@ class UserPublicProfile(BaseModel):
 
 
 class TransformationParameters(BaseModel):
-    width: int | None = None
-    height: int | None = None
-    crop: str | None = None
-    effect: str | None = None
+    """
+    Data model for transformation parameters.
+
+    Attributes:
+        width (int): The width of the transformed image.
+        height (int): The height of the transformed image.
+        crop (str): The crop effects like:
+            fill, lfill, fill_pad, crop, thumb, auto, scale, fit, limit, mfit, pad, lpad, mpad, imagga_scale, imagga_crop
+            cloudinary docs: https://cloudinary.com/documentation/resizing_and_cropping#resize_and_crop_modes
+        effects (list[str]): The cloudinary transformation effects like:
+            art:al_dente/athena/audrey/aurora/daguerre/eucalyptus/fes/frost/hairspray/hokusai/incognito/linen/peacock
+                /primavera/quartz/red_rock/refresh/sizzle/sonnet/ukulele/zorro,
+            cartoonify, pixelate:value (e.g. 20), saturation:value (e.g. 50) blur:value (e.g. 50), sepia, grayscale, vignette
+        more info:
+    """
+
+    width: int = 0
+    height: int = 0
+    crop: str = ""
+    effects: list[str] = []
