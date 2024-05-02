@@ -6,7 +6,7 @@ import cloudinary
 import cloudinary.uploader
 
 from src.conf.config import CLOUDINARY_CONFIG, CLOUDINARY_PARAMS
-from src.schemas import PhotoOut
+from src.schemas import PhotoOut, TransformationParameters
 
 
 async def _get_cloudinary_public_ip(url: str) -> str:
@@ -66,3 +66,22 @@ async def create_qr_code(photo_url: str) -> str:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+
+
+async def transform_photo(
+    photo: PhotoOut, transformation_params: TransformationParameters
+) -> str:
+    params = {}
+    if transformation_params.width:
+        params["width"] = transformation_params.width
+    if transformation_params.height:
+        params["height"] = transformation_params.height
+    if transformation_params.crop:
+        params["crop"] = transformation_params.crop
+    if transformation_params.effect:
+        params["effect"] = transformation_params.effect
+    photo_public_id = f"{CLOUDINARY_PARAMS['photo_public_id_prefix']}/{await _get_cloudinary_public_ip(photo.file_path)}"
+    transform_photo_url = cloudinary.utils.cloudinary_url(photo_public_id, **params)
+    print(f"Transformed photo url: {transform_photo_url}")
+    print(**params)
+    return transform_photo_url
