@@ -71,6 +71,16 @@ async def create_qr_code(photo_url: str) -> str:
 async def transform_photo(
     photo: PhotoOut, transformation_params: TransformationParameters
 ) -> (str, list[str]):
+    """
+    Function to perform transformations on a photo.
+
+    Args:
+         photo (PhotoOut): Photo to be transformed.
+         transformation_params (TransformationParameters): Transformation parameters.
+
+    Returns:
+        tuple (str, list[dict]): URL of the transformed photo.
+    """
     params = []
     if transformation_params.width:
         params.append({"width": transformation_params.width})

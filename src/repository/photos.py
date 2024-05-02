@@ -145,6 +145,18 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
 async def add_transformation(
     photo: PhotoOut, transform_photo_url: str, params: list, db: Session
 ) -> PhotoOut:
+    """
+    Add a new transformation to the photo.
+
+    Args:
+         photo (PhotoOut): Photo object to be transformed.
+         transform_photo_url (str): The url of the transformation.
+         params (list): List of parameters to be passed to the transformation.
+         db (Session): database session
+
+    Returns:
+        PhotoOut: Photo object with transformed photo.
+    """
     transformations = photo.transformation or {}
     transformations[transform_photo_url] = params
     photo.transformation = None

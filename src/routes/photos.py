@@ -184,6 +184,21 @@ async def transform_photo(
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
+    """
+    Create a photo transformation
+
+    Args:
+         photo_id (int): The ID of the photo to be transformed.
+         transformation_params (TransformationParameters): The transformation parameters (more info in Schemas.py).
+         current_user (UserOut): An instance of User representing the authenticated user.
+         db (Session): Database session.
+
+    Returns:
+        PhotoOut: The transformed photo object
+
+    Raises:
+        HTTPException: If the specified photo is not found in the database or action is not performed by photo owner.
+    """
     photo = await photos_repository.get_photo_by_id(photo_id, db)
     if not photo:
         raise HTTPException(
