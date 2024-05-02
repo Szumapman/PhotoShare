@@ -70,18 +70,19 @@ async def create_qr_code(photo_url: str) -> str:
 
 async def transform_photo(
     photo: PhotoOut, transformation_params: TransformationParameters
-) -> str:
-    params = {}
+) -> (str, list[str]):
+    params = []
     if transformation_params.width:
-        params["width"] = transformation_params.width
+        params.append({"width": transformation_params.width})
     if transformation_params.height:
-        params["height"] = transformation_params.height
+        params.append({"height": transformation_params.height})
     if transformation_params.crop:
-        params["crop"] = transformation_params.crop
-    if transformation_params.effect:
-        params["effect"] = transformation_params.effect
+        params.append({"crop": transformation_params.crop})
+    if transformation_params.effects:
+        for effect in transformation_params.effects:
+            params.append({"effect": effect})
     photo_public_id = f"{CLOUDINARY_PARAMS['photo_public_id_prefix']}/{await _get_cloudinary_public_ip(photo.file_path)}"
-    transform_photo_url = cloudinary.utils.cloudinary_url(photo_public_id, **params)
-    print(f"Transformed photo url: {transform_photo_url}")
-    print(**params)
-    return transform_photo_url
+    transform_photo_url = cloudinary.utils.cloudinary_url(
+        photo_public_id, transformation=params
+    )[0]
+    return transform_photo_url, params
