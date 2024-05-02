@@ -14,6 +14,7 @@ from src.schemas import PhotoOut, UserOut
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
 from src.services import photos as photos_services
+from src.conf.config import MAX_DESCRIPTION_LENGTH, MAX_TAG_NAME_LENGTH
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
@@ -26,12 +27,23 @@ async def upload_photo(
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
+    if len(description) > MAX_DESCRIPTION_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Description must be less than {MAX_DESCRIPTION_LENGTH} characters",
+        )
     tags = tags[0].split(",")
     if len(tags) > 5:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Too many tags provided. You can use max of 5 tags.",
         )
+    for tag in tags:
+        if len(tag) > MAX_TAG_NAME_LENGTH:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Tag name must be less than {MAX_TAG_NAME_LENGTH} characters.",
+            )
     photo_url = await photos_services.upload_photo(file)
     qr_code_url = await photos_services.create_qr_code(photo_url)
     new_photo = await photos_repository.upload_photo(

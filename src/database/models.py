@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey,
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.orm import relationship, declarative_base
 
+from src.conf.config import MAX_DESCRIPTION_LENGTH, MAX_TAG_NAME_LENGTH
+
 Base = declarative_base()
 
 
@@ -60,7 +62,7 @@ class Photo(Base):
     file_path = Column(String(255), nullable=False)
     qr_path = Column(String(255), nullable=False)
     transformation = Column(JSON, nullable=True)
-    description = Column(String(1000), nullable=False)
+    description = Column(String(MAX_DESCRIPTION_LENGTH), nullable=False)
     upload_date = Column(DateTime, default=func.now())
     user_id = Column(Integer, ForeignKey("users.id"))
 
@@ -110,7 +112,7 @@ class Tag(Base):
 
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True)
-    tag_name = Column(String(50), nullable=False, unique=True)
+    tag_name = Column(String(MAX_TAG_NAME_LENGTH), nullable=False, unique=True)
 
     photos = relationship("Photo", secondary="photo_tags", back_populates="tags")
 

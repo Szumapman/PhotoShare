@@ -80,3 +80,6 @@ CLOUDINARY_PARAMS = {
     "photo_public_id_prefix": "PhotoShare",
     "qr_public_id_prefix": "PhotoShare/qr-codes",
 }
+
+MAX_DESCRIPTION_LENGTH = 1000
+MAX_TAG_NAME_LENGTH = 50
