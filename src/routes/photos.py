@@ -189,10 +189,15 @@ async def transform_photo(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
+    if photo.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the current authenticated user is allowed to perform the transformation.",
+        )
     transform_photo_url, params = await photos_services.transform_photo(
         photo, transformation_params
     )
     photo = await photos_repository.add_transformation(
-        photo.id, transform_photo_url, params, db
+        photo, transform_photo_url, params, db
     )
     return photo
