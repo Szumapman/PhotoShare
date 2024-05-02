@@ -1,5 +1,4 @@
 from typing import List
-import json
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
