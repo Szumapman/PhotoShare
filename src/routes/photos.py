@@ -27,6 +27,22 @@ async def upload_photo(
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ) -> PhotoOut:
+    """
+    Uploads a new photo to the database.
+
+    Args:
+        file (UploadFile): A file to be uploaded.
+        description (str): The description of the photo.
+        tags (list[str]): A list of tags.
+        current_user (UserOut): The current user.
+        db (Session): A database session.
+
+    Returns:
+          PhotoOut: The uploaded photo.
+
+    Raises:
+          HTTPException: If the description or tag_name are too long, or if you try to add to many tags.
+    """
     if len(description) > MAX_DESCRIPTION_LENGTH:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
