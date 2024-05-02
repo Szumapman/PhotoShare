@@ -10,7 +10,7 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.schemas import PhotoOut, UserOut
+from src.schemas import PhotoOut, UserOut, TransformationParameters
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
 from src.services import photos as photos_services
@@ -175,3 +175,16 @@ async def delete_photo(
         )
     await photos_services.delete_from_cloudinary(photo)
     return photo
+
+
+@router.post("/transformation/{photo_id}")
+async def transform_photo(
+    photo_id: int,
+    transformation_params: TransformationParameters,
+    current_user: UserOut = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+):
+    photo = await photos_repository.get_photo_by_id(photo_id, db)
+    transform_photo_url = await photos_services.transform_photo(
+        photo, transformation_params
+    )
