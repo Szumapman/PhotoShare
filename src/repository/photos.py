@@ -143,15 +143,13 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
 
 
 async def add_transformation(
-    photo_id: int, transform_photo_url: str, params: list, db: Session
+    photo: PhotoOut, transform_photo_url: str, params: list, db: Session
 ) -> PhotoOut:
-    photo = db.query(Photo).filter(Photo.id == photo_id).first()
     transformations = photo.transformation or {}
-    print(transformations)
     transformations[transform_photo_url] = params
-    print(transformations)
+    photo.transformation = None
+    db.commit()
     photo.transformation = transformations
-    print(photo.transformation)
     db.commit()
     db.refresh(photo)
     return photo
