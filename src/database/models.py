@@ -2,7 +2,11 @@ from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey,
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.orm import relationship, declarative_base
 
-from src.conf.config import MAX_DESCRIPTION_LENGTH, MAX_TAG_NAME_LENGTH, MAX_COMMENT_LENGTH
+from src.conf.config import (
+    MAX_DESCRIPTION_LENGTH,
+    MAX_TAG_NAME_LENGTH,
+    MAX_COMMENT_LENGTH,
+)
 
 Base = declarative_base()
 
