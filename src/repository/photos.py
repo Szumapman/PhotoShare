@@ -1,4 +1,5 @@
 from typing import List
+import json
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -139,3 +140,18 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Only owner of the photo or admin can delete it.",
     )
+
+
+async def add_transformation(
+    photo_id: int, transform_photo_url: str, params: list, db: Session
+) -> PhotoOut:
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    transformations = photo.transformation or {}
+    print(transformations)
+    transformations[transform_photo_url] = params
+    print(transformations)
+    photo.transformation = transformations
+    print(photo.transformation)
+    db.commit()
+    db.refresh(photo)
+    return photo
