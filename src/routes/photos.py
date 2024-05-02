@@ -177,7 +177,7 @@ async def delete_photo(
     return photo
 
 
-@router.post("/transformation/{photo_id}")
+@router.post("/transformation/{photo_id}", response_model=PhotoOut)
 async def transform_photo(
     photo_id: int,
     transformation_params: TransformationParameters,
@@ -185,6 +185,14 @@ async def transform_photo(
     db: Session = Depends(get_db),
 ):
     photo = await photos_repository.get_photo_by_id(photo_id, db)
-    transform_photo_url = await photos_services.transform_photo(
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    transform_photo_url, params = await photos_services.transform_photo(
         photo, transformation_params
     )
+    photo = await photos_repository.add_transformation(
+        photo.id, transform_photo_url, params, db
+    )
+    return photo
