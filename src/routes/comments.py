@@ -129,6 +129,22 @@ async def download_all_comments(
         db: Session = Depends(get_db),
         current_user: User = Depends(auth_service.get_current_user),
     ):
+    """
+    Downloading the list of all comments associated with a specific photo.
+
+    Parameters:
+    - photo_id (int): The ID of the photo for which comments are to be downloaded.
+    - db (Session): Database session dependency.
+    - current_user (User, optional): Current user dependency.
+
+    Raises:
+    - HTTPException:
+        - 404 NOT FOUND - If the specified photo does not exist or if there are no comments associated with the photo.
+        - 401 UNAUTHORIZED - If the user is not authenticated.
+
+    Returns:
+        dict: A dictionary containing the list of comments associated with the photo. Each comment is represented as a dictionary with keys 'comment id', 'comment text', and 'author'.
+    """
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
         raise HTTPException(

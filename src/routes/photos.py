@@ -224,6 +224,22 @@ async def download_all_photos(
         db: Session = Depends(get_db),
         current_user: User = Depends(auth_service.get_current_user),
     ):
+    """
+    Downloading the list of all photos uploaded by a specific user.
+
+    Parameters:
+    - user_id (int): The ID of the user whose photos are to be downloaded.
+    - db (Session): Database session dependency.
+    - current_user (User): Current user dependency.
+
+    Raises:
+    - HTTPException:
+        - 404 NOT FOUND - If the specified user does not exist or if there are no photos uploaded by the user.
+        - 401 UNAUTHORIZED - If the user is not authenticated.
+
+    Returns:
+        dict: A dictionary containing the list of photos uploaded by the user. Each photo is represented as a dictionary with keys 'photo id' and 'photo file path'.
+    """
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
