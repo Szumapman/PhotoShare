@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey,
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.orm import relationship, declarative_base
 from src.conf.constant import (
+    MAX_USERNAME_LENGTH,
     MAX_COMMENT_LENGTH,
     MAX_DESCRIPTION_LENGTH,
     MAX_TAG_NAME_LENGTH,
@@ -29,7 +30,7 @@ class User(Base):
 
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    username = Column(String(255), nullable=False, unique=True)
+    username = Column(String(MAX_USERNAME_LENGTH), nullable=False, unique=True)
     email = Column(String, unique=True, index=True, nullable=False)
     confirmed = Column(Boolean, default=False)
     role = Column(
