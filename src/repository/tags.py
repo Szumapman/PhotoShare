@@ -81,7 +81,7 @@ async def add_tag(
         list[TagOut]: The list of tags from the database connected to the photo.
 
     Raises:
-        HTTPException (403_FORBIDDEN) if action is not performef by the photo owner,
+        HTTPException (403_FORBIDDEN) if action is not performed by the photo owner,
         HTTPException (400_BAD_REQUEST) if photo already has five tags or has this tag.
     """
     photo = _get_photo(photo_id, db)
@@ -135,7 +135,8 @@ async def update_tag(
         list[TagOut]: The list of tags from the database connected to the photo.
 
     Raises:
-        HTTPException (400_BAD_REQUEST) if photo already has this tag.
+        HTTPException (400_BAD_REQUEST) if photo already has this tag
+        HTTPException (403_FORBIDDEN) if action is not performed by the photo owner
     """
     photo = _get_photo(photo_id, db)
     tag = _get_tag(tag_id, db)
@@ -197,10 +198,7 @@ async def delete_tag(
     """
     photo = _get_photo(photo_id, db)
     tag = _get_tag(tag_id, db)
-    if photo.user_id != user.id or user.role in [
-        "admin",
-        "moderator",
-    ]:
+    if photo.user_id != user.id and user.role not in ["admin", "moderator"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only the photo owner, moderator or admin can delete tags",

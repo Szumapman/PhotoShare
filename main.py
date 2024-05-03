@@ -7,11 +7,11 @@ from src.conf.config import settings
 from src.routes import auth, comments, admin, users, tags
 from src.routes import photos
 import uvicorn
-from dotenv import load_dotenv
+
+# from dotenv import load_dotenv
 
 origins = ["http://localhost:3000"]
 
-load_dotenv()
 app = FastAPI()
 
 app.add_middleware(
