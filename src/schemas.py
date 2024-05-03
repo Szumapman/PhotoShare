@@ -5,6 +5,13 @@ from typing import List, Dict
 
 from pydantic import BaseModel, Field, EmailStr, field_validator
 
+from src.conf.constant import (
+    MAX_DESCRIPTION_LENGTH,
+    MAX_TAG_NAME_LENGTH,
+    MAX_COMMENT_LENGTH,
+    MAX_USERNAME_LENGTH,
+)
+
 
 class UserRoleValid(str, Enum):
     admin = "admin"
@@ -179,3 +186,29 @@ class TransformationParameters(BaseModel):
     height: int = 0
     crop: str = ""
     effects: list[str] = []
+
+
+class TagIn(BaseModel):
+    """
+    Data model for enter tags.
+
+    Attributes:
+        name (str): The name of the tag.
+    """
+
+    tag_name: str = Field(max_items=MAX_TAG_NAME_LENGTH)
+
+
+class TagOut(TagIn):
+    """
+    Data model for tags.
+    Inherits from TagIn.
+
+    Attributes:
+        id (int): The unique identifier of the tag.
+    """
+
+    id: int
+
+    class Config:
+        from_attributes = True
