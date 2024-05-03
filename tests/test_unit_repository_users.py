@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 from src.database.models import User
 from src.schemas import UserIn, UserOut
 from src.repository import users as users_repository
+from src.services.auth import auth_service
 
 
 class TestUsers(unittest.IsolatedAsyncioTestCase):
@@ -84,7 +85,11 @@ class TestUsers(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(updated_user.username, new_user_data.username)
         self.assertEqual(updated_user.email, new_user_data.email)
-        self.assertEqual(updated_user.password, new_user_data.password)
+
+        updated_user_password = updated_user.password
+        updated_password_correct = auth_service.verify_password(new_user_data.password, updated_user_password)
+        self.assertTrue(updated_password_correct)
+
 
 
 if __name__ == "__main__":
