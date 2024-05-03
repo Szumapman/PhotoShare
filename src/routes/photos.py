@@ -10,6 +10,7 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
+from src.database.models import User, Photo
 from src.schemas import PhotoOut, UserOut, TransformationParameters
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
@@ -216,3 +217,18 @@ async def transform_photo(
         photo, transform_photo_url, params, db
     )
     return photo
+
+@router.get("/")
+async def download_all_photos(
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(auth_service.get_current_user),
+    ):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You must be logged in to access to photos list")
+
+
+    photos = db.query(Photo).filter(Photo.user_id == user_id).all()
+    photos_json = [{"photo id": photo.id, "photo file path": photo.file_path} for photo in photos]
+    return {"photos": photos_json}
+

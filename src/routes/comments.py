@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+
+from src.database.models import Comment, User, Photo
 from src.schemas import CommentOut
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -120,3 +122,25 @@ async def delete_comment(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Standard users are not authorized to delete comments",
         )
+
+@router.get("/")
+async def download_all_comments(
+        photo_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(auth_service.get_current_user),
+    ):
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You must be logged in to access to comments list")
+
+    comments = db.query(Comment).filter(Comment.photo_id == photo_id).all()
+    if not comments:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
+        )
+    comments_json = [{"comment id": comment.id, "comment text": comment.text, "author": comment.user_id} for comment in comments]
+    return {"comments": comments_json}
