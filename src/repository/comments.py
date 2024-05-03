@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
-from src.database.models import Comment
+from src.database.models import Comment, Photo
 from src.schemas import CommentOut
 
 
@@ -102,3 +102,33 @@ async def delete_comment(comment_id: int, db: Session):
         date_posted=comment.date_posted,
         date_updated=comment.date_updated,
     )
+
+async def get_comments_list(photo_id: int, db: Session):
+    """
+    Downloading the list of all comments associated with a specific photo.
+
+    Parameters:
+    - photo_id (int): The ID of the photo for which comments are to be downloaded.
+    - db (Session): Database session dependency.
+
+    Raises:
+    - HTTPException:
+        - 404 NOT FOUND - If the specified photo does not exist or if there are no comments associated with the photo.
+        - 401 UNAUTHORIZED - If the user is not authenticated.
+
+    Returns:
+        dict: A dictionary containing the list of comments associated with the photo. Each comment is represented as a dictionary with keys 'comment id', 'comment text', and 'author'.
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+
+    comments = db.query(Comment).filter(Comment.photo_id == photo_id).all()
+    if not comments:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
+        )
+    comments_json = [{"comment id": comment.id, "comment text": comment.text, "author": comment.user_id} for comment in comments]
+    return {"comments": comments_json}

@@ -130,33 +130,16 @@ async def download_all_comments(
         current_user: User = Depends(auth_service.get_current_user),
     ):
     """
-    Downloading the list of all comments associated with a specific photo.
+         Downloading the list of download all comments associated with a specific photo.
 
-    Parameters:
-    - photo_id (int): The ID of the photo for which comments are to be downloaded.
-    - db (Session): Database session dependency.
-    - current_user (User, optional): Current user dependency.
+        Parameters:
+        - photo_id (int): The ID of the photo for which comments are to be downloaded.
+        - db (Session, optional): Database session dependency. Defaults to the database session obtained from dependency injection.
+        - current_user (User, optional): Current authenticated user. Defaults to the user obtained from authentication service.
 
-    Raises:
-    - HTTPException:
-        - 404 NOT FOUND - If the specified photo does not exist or if there are no comments associated with the photo.
-        - 401 UNAUTHORIZED - If the user is not authenticated.
-
-    Returns:
+        Returns:
         dict: A dictionary containing the list of comments associated with the photo. Each comment is represented as a dictionary with keys 'comment id', 'comment text', and 'author'.
-    """
-    photo = db.query(Photo).filter(Photo.id == photo_id).first()
-    if not photo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
-        )
-    if not current_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You must be logged in to access to comments list")
+        """
 
-    comments = db.query(Comment).filter(Comment.photo_id == photo_id).all()
-    if not comments:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-        )
-    comments_json = [{"comment id": comment.id, "comment text": comment.text, "author": comment.user_id} for comment in comments]
-    return {"comments": comments_json}
+    comments = await comment_repository.get_comments_list(photo_id, db)
+    return comments

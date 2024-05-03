@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from src.database.models import Photo, Tag, PhotoTag
+from src.database.models import Photo, Tag, PhotoTag, User
 from src.schemas import PhotoOut, UserOut
 
 
@@ -163,3 +163,32 @@ async def add_transformation(
     db.commit()
     db.refresh(photo)
     return photo
+
+async def get_photos_list(user_id: int, db: Session):
+    """
+    Downloading the list of all photos uploaded by a specific user.
+
+    Parameters:
+    - user_id (int): The ID of the user whose photos are to be downloaded.
+    - db (Session): Database session dependency.
+
+    Raises:
+    - HTTPException:
+        - 404 NOT FOUND - If the specified user does not exist or if there are no photos uploaded by the user.
+        - 401 UNAUTHORIZED - If the user is not authenticated.
+
+    Returns:
+        dict: A dictionary containing the list of photos uploaded by the user. Each photo is represented as a dictionary with keys 'photo id' and 'photo file path'.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    photos = db.query(Photo).filter(Photo.user_id == user_id).all()
+    if not photos:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    photos_json = [{"photo id": photo.id, "photo file path": photo.file_path} for photo in photos]
+    return {"photos": photos_json}

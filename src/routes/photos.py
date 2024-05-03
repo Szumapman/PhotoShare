@@ -221,37 +221,20 @@ async def transform_photo(
 @router.get("/")
 async def download_all_photos(
         user_id: int,
-        db: Session = Depends(get_db),
         current_user: User = Depends(auth_service.get_current_user),
+        db: Session = Depends(get_db),
     ):
     """
-    Downloading the list of all photos uploaded by a specific user.
+        Downloading the list of all photos uploaded by a specific user.
 
-    Parameters:
-    - user_id (int): The ID of the user whose photos are to be downloaded.
-    - db (Session): Database session dependency.
-    - current_user (User): Current user dependency.
+        Parameters:
+        - user_id (int): The ID of the user whose photos are to be downloaded.
+        - current_user (User, optional): Current authenticated user. Defaults to the user obtained from authentication service.
+        - db (Session, optional): Database session dependency. Defaults to the database session obtained from dependency injection.
 
-    Raises:
-    - HTTPException:
-        - 404 NOT FOUND - If the specified user does not exist or if there are no photos uploaded by the user.
-        - 401 UNAUTHORIZED - If the user is not authenticated.
-
-    Returns:
+        Returns:
         dict: A dictionary containing the list of photos uploaded by the user. Each photo is represented as a dictionary with keys 'photo id' and 'photo file path'.
-    """
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    if not current_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You must be logged in to access to photos list")
+        """
 
-    photos = db.query(Photo).filter(Photo.user_id == user_id).all()
-    if not photos:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
-        )
-    photos_json = [{"photo id": photo.id, "photo file path": photo.file_path} for photo in photos]
-    return {"photos": photos_json}
+    photos = await photos_repository.get_photos_list(user_id, db)
+    return photos
