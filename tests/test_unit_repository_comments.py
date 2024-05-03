@@ -14,14 +14,14 @@ engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+testing_session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class TestComments(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
-        self.db = TestingSessionLocal()
+        self.db = testing_session_local()
         self.comment_id = 1
         self.wrong_comment_id = 999
         self.user_id = 1
