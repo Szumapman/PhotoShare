@@ -65,7 +65,7 @@ class TestSearchUsersWithPhotos(unittest.IsolatedAsyncioTestCase):
     async def test_search_by_username(self):
         self.query_mock.all.return_value = [self.users[0]]
         result = await admin_moderator_search_users_with_photos("user1", None, None, self.session)
-        self.query_mock.filter.assert_called_once()
+        self.assertEqual(self.query_mock.filter.call_count, 2)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].username, "user1")
 
@@ -90,7 +90,7 @@ class TestSearchUsersWithPhotos(unittest.IsolatedAsyncioTestCase):
     async def test_no_filters(self):
         self.query_mock.all.return_value = self.users
         result = await admin_moderator_search_users_with_photos(None, None, None, self.session)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 3)
 
 
 if __name__ == '__main__':
