@@ -3,19 +3,20 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 from sqlalchemy.orm import Session
 from src.database.models import Photo, Tag, PhotoTag
+from src.repository.users import admin_moderator_search_users_with_photos
 from src.schemas import PhotoOut, UserOut
-from src.repository.photos import search_photos
 
 
-class TestPhotos(unittest.IsolatedAsyncioTestCase):
+class TestSearchUsersWithPhotos(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.session = MagicMock(spec=Session)
         self.query_mock = MagicMock()
         self.session.query.return_value = self.query_mock
         self.query_mock.join.return_value = self.query_mock
         self.query_mock.filter.return_value = self.query_mock
-        self.query_mock.order_by.return_value = self.query_mock
         self.query_mock.distinct.return_value = self.query_mock
+        self.query_mock.group_by.return_value = self.query_mock
+        self.query_mock.order_by.return_value = self.query_mock
 
         self.users = [
             UserOut(
@@ -61,26 +62,35 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
             PhotoTag(photo_id=3, tag_id=3),
         ]
 
-    async def test_search_photos_with_query(self):
-        self.query_mock.all.return_value = [self.photos[0]]
-        result = await search_photos("mountain", "date", self.session)
+    async def test_search_by_username(self):
+        self.query_mock.all.return_value = [self.users[0]]
+        result = await admin_moderator_search_users_with_photos("user1", None, None, self.session)
         self.query_mock.filter.assert_called_once()
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].description, "Beautiful mountain")
+        self.assertEqual(result[0].username, "user1")
 
-    async def test_search_photos_no_results(self):
+    async def test_search_by_description(self):
+        self.query_mock.all.return_value = [self.users[1]]
+        result = await admin_moderator_search_users_with_photos(None, "sunset", None, self.session)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].username, "user2")
+
+    async def test_search_by_tag(self):
+        self.query_mock.all.return_value = [self.users[1]]
+        result = await admin_moderator_search_users_with_photos(None, None, "nature", self.session)
+        self.query_mock.join.assert_called()
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].username, "user2")
+
+    async def test_no_results(self):
         self.query_mock.all.return_value = []
-        result = await search_photos("ocean", "date", self.session)
+        result = await admin_moderator_search_users_with_photos("nonexistent", None, None, self.session)
         self.assertEqual(len(result), 0)
 
-    async def test_search_photos_sort_by_date(self):
-        self.query_mock.all.return_value = sorted(self.photos, key=lambda x: x.upload_date, reverse=True)
-        result = await search_photos(None, "date", self.session)
-        self.assertTrue(all(result[i].upload_date >= result[i + 1].upload_date for i in range(len(result) - 1)))
-
-    async def test_search_photos_invalid_sort_option(self):
-        with self.assertRaises(ValueError):
-            await search_photos("mountain", "invalid_sort_option", self.session)
+    async def test_no_filters(self):
+        self.query_mock.all.return_value = self.users
+        result = await admin_moderator_search_users_with_photos(None, None, None, self.session)
+        self.assertEqual(len(result), 2)
 
 
 if __name__ == '__main__':

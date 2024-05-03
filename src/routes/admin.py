@@ -77,5 +77,5 @@ async def search_users_with_photos(
 ) -> List[UserPublicProfile]:
     if current_user.role not in ["admin", "moderator"]:
         raise HTTPException(status_code=403, detail="Unauthorized access")
-    users = await repository_users.search_users_with_photos(username, description, tag, db)
+    users = await repository_users.admin_moderator_search_users_with_photos(username, description, tag, db)
     return users

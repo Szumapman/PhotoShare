@@ -261,7 +261,7 @@ async def update_current_user_profile(
     )
 
 
-async def search_users_with_photos(
+async def admin_moderator_search_users_with_photos(
         username: Optional[str],
         description: Optional[str],
         tag: Optional[str],

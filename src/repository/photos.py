@@ -142,6 +142,9 @@ async def search_photos(query: Optional[str], sort_by: str, db: Session) -> List
     Returns:
         List[PhotoOut]: List of photos matching the search criteria.
     """
+    if sort_by not in ["date", "rating"]:
+        raise ValueError(f"Invalid sort option: {sort_by}")
+
     base_query = db.query(Photo).join(Photo.tags)
 
     if query:
