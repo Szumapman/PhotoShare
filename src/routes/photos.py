@@ -224,11 +224,18 @@ async def download_all_photos(
         db: Session = Depends(get_db),
         current_user: User = Depends(auth_service.get_current_user),
     ):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You must be logged in to access to photos list")
 
-
     photos = db.query(Photo).filter(Photo.user_id == user_id).all()
+    if not photos:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
     photos_json = [{"photo id": photo.id, "photo file path": photo.file_path} for photo in photos]
     return {"photos": photos_json}
-
