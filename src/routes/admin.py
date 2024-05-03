@@ -11,17 +11,29 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 
 @router.get("/")
-async def index(
+async def index_of_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    """
+    Retrieves all users from the database.
+
+    Parameters:
+    - db (Session, optional): Database session dependency. Defaults to the database session obtained from dependency injection.
+    - current_user (User): Current authenticated user.
+
+    Raises:
+    - HTTPException:
+        - 403 FORBIDDEN - If the current user is not an admin.
+
+    Returns:
+    dict: A dictionary containing the list of users retrieved from the database. Each user is represented as a dictionary with keys 'id', 'username', 'email', 'created_at', and 'is_active'.
+    """
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Unauthorized")
-    users = db.query(
-        User.id, User.username, User.email, User.created_at, User.is_active
-    ).all()
-    users_json = [user._asdict() for user in users]
-    return {"users": users_json}
+
+    users = repository_users.get_all_users(db)
+    return {"users": users}
 
 
 @router.post("/activ_status/{user_id}")
