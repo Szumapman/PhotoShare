@@ -1,20 +1,10 @@
 import unittest
 
 from fastapi import HTTPException, status
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from src.repository.comments import add_comment, update_comment, delete_comment
 from src.database.models import Base
-
-
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-
-testing_session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from tests.db_test_config import engine, testing_session_local
 
 
 class TestComments(unittest.IsolatedAsyncioTestCase):
