@@ -130,7 +130,9 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
     )
 
 
-async def search_photos(query: Optional[str], sort_by: str, db: Session) -> List[PhotoOut]:
+async def search_photos(
+    query: Optional[str], sort_by: str, db: Session
+) -> List[PhotoOut]:
     """
     Search and sort photos based on the query and sort criteria.
 
@@ -144,13 +146,10 @@ async def search_photos(query: Optional[str], sort_by: str, db: Session) -> List
     """
     if sort_by not in ["date", "rating"]:
         raise ValueError(f"Invalid sort option: {sort_by}")
-
     base_query = db.query(Photo).join(Photo.tags)
-
-    if query:
-        base_query = base_query.filter(
-            or_(Photo.description.ilike(f"%{query}%"), Tag.tag_name.ilike(f"%{query}%"))
-        ).distinct()
+    base_query = base_query.filter(
+        or_(Photo.description.ilike(f"%{query}%"), Tag.tag_name.ilike(f"%{query}%"))
+    ).distinct()
 
     if sort_by == "date":
         base_query = base_query.order_by(Photo.upload_date.desc())
@@ -158,7 +157,5 @@ async def search_photos(query: Optional[str], sort_by: str, db: Session) -> List
     #     base_query = base_query.order_by(Photo.rating.desc())
 
     photos = base_query.all()
-    if not photos:
-        return []
 
-    return [PhotoOut.from_orm(photo) for photo in photos]
+    return [PhotoOut.from_orm(photo) for photo in photos if photos]

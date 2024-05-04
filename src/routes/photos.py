@@ -154,19 +154,35 @@ async def delete_photo(
     return photo
 
 
-@router.get("/search", response_model=List[PhotoOut])
+@router.get("/photo/search", response_model=List[PhotoOut])
 async def search_photos(
-    query: Optional[str] = Query(None, description="Search by keywords in description or tags"),
-    sort_by: Optional[str] = Query("date", enum=["date", "rating"], description="Sort by date or rating"),
+    query: Optional[str] = Query(
+        None, description="Search by keywords in description or tags"
+    ),
+    sort_by: Optional[str] = Query(
+        "date",
+        enum=["date"],
+        description="Sort by date or rating",  # "rating" to add to enum when ready
+    ),
     db: Session = Depends(get_db),
 ) -> List[PhotoOut]:
     """
     Search photos based on description or tags and optionally sort them.
+
+    Args:
+        query (Optional[str]): Searching query to find photos by keywords in description or tags.
+        sort_by (Optional[str]): Sort by date or rating
+        db (Session): Database session.
+
+    Returns:
+        List[PhotoOut]: List of photos matching the provided keywords.
+
+    Raises:
+        HTTPException: 400 Bad Request If the query is empty.
     """
-    photos = await photos_repository.search_photos(query, sort_by, db)
-    if not photos:
+    if query is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No photos found matching the criteria"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Query must be provided",
         )
-    return photos
+    return await photos_repository.search_photos(query, sort_by, db)
