@@ -123,23 +123,24 @@ async def delete_comment(
             detail="Standard users are not authorized to delete comments",
         )
 
-@router.get("/")
-async def download_all_comments(
-        photo_id: int,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(auth_service.get_current_user),
-    ):
+
+@router.get("/", response_model=list[CommentOut])
+async def get_comments(
+    photo_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth_service.get_current_user),
+):
     """
-         Downloading the list of download all comments associated with a specific photo.
+     Get all comments associated with a specific photo.
 
-        Parameters:
+    Parameters:
         - photo_id (int): The ID of the photo for which comments are to be downloaded.
-        - db (Session, optional): Database session dependency. Defaults to the database session obtained from dependency injection.
-        - current_user (User, optional): Current authenticated user. Defaults to the user obtained from authentication service.
+        - db (Session, optional): Database session dependency.
+        - current_user (User, optional): Current authenticated user.
 
-        Returns:
-        dict: A dictionary containing the list of comments associated with the photo. Each comment is represented as a dictionary with keys 'comment id', 'comment text', and 'author'.
-        """
+    Returns:
+        list[CommentOut]: The list of comments for the specified photo.
+    """
 
-    comments = await comment_repository.get_comments_list(photo_id, db)
+    comments = await comment_repository.get_comments(photo_id, db)
     return comments

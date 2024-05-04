@@ -135,7 +135,7 @@ async def update_avatar(email, url: str, db: Session) -> UserOut:
     )
 
 
-def get_all_users(db: Session):
+async def get_users(db: Session) -> list[UserOut]:
     """
     Retrieves all users from the database.
 
@@ -143,13 +143,9 @@ def get_all_users(db: Session):
     - db (Session): Database session dependency.
 
     Returns:
-    list: A list of dictionaries, each representing a user. Each dictionary contains user details such as 'id', 'username', 'email', 'created_at', and 'is_active'.
+    list[UserOut]: The list of users.
     """
-    users = db.query(
-        User.id, User.username, User.email, User.created_at, User.is_active
-    ).all()
-    users_json = [user._asdict() for user in users]
-    return users_json
+    return db.query(User).all()
 
 
 async def set_user_role(user_id: int, role: str, db: Session) -> UserOut:

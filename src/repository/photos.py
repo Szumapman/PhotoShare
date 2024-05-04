@@ -164,21 +164,20 @@ async def add_transformation(
     db.refresh(photo)
     return photo
 
-async def get_photos_list(user_id: int, db: Session):
+
+async def get_user_photos(user_id: int, db: Session) -> list[PhotoOut]:
     """
-    Downloading the list of all photos uploaded by a specific user.
+    Get the list of all photos uploaded by a specific user.
 
-    Parameters:
-    - user_id (int): The ID of the user whose photos are to be downloaded.
-    - db (Session): Database session dependency.
-
-    Raises:
-    - HTTPException:
-        - 404 NOT FOUND - If the specified user does not exist or if there are no photos uploaded by the user.
-        - 401 UNAUTHORIZED - If the user is not authenticated.
+    Args:
+        user_id (int): The ID of the user whose photos are to be downloaded.
+        db (Session): Database session dependency.
 
     Returns:
-        dict: A dictionary containing the list of photos uploaded by the user. Each photo is represented as a dictionary with keys 'photo id' and 'photo file path'.
+        list[PhotoOut]: List of photos uploaded by a specific user.
+
+    Raises:
+        HTTPException: 404 NOT FOUND - If the specified user does not exist.
     """
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -186,9 +185,18 @@ async def get_photos_list(user_id: int, db: Session):
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     photos = db.query(Photo).filter(Photo.user_id == user_id).all()
-    if not photos:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
-        )
-    photos_json = [{"photo id": photo.id, "photo file path": photo.file_path} for photo in photos]
-    return {"photos": photos_json}
+    return photos
+
+
+async def get_photos(db: Session) -> list[PhotoOut]:
+    """
+    Get the list of all photos.
+
+    Args:
+         db (Session): Database session dependency.
+
+    Returns:
+        list[PhotoOut]: List of photos.
+    """
+    photos = db.query(Photo).all()
+    return photos

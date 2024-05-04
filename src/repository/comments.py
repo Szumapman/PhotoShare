@@ -103,7 +103,8 @@ async def delete_comment(comment_id: int, db: Session):
         date_updated=comment.date_updated,
     )
 
-async def get_comments_list(photo_id: int, db: Session):
+
+async def get_comments(photo_id: int, db: Session) -> list[CommentOut]:
     """
     Downloading the list of all comments associated with a specific photo.
 
@@ -111,24 +112,16 @@ async def get_comments_list(photo_id: int, db: Session):
     - photo_id (int): The ID of the photo for which comments are to be downloaded.
     - db (Session): Database session dependency.
 
+    Returns:
+        list[CommentOut]: The list of comments associated with a photo.
+
     Raises:
     - HTTPException:
-        - 404 NOT FOUND - If the specified photo does not exist or if there are no comments associated with the photo.
-        - 401 UNAUTHORIZED - If the user is not authenticated.
-
-    Returns:
-        dict: A dictionary containing the list of comments associated with the photo. Each comment is represented as a dictionary with keys 'comment id', 'comment text', and 'author'.
+        - 404 NOT FOUND - If the specified photo does not exist.
     """
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
-
-    comments = db.query(Comment).filter(Comment.photo_id == photo_id).all()
-    if not comments:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-        )
-    comments_json = [{"comment id": comment.id, "comment text": comment.text, "author": comment.user_id} for comment in comments]
-    return {"comments": comments_json}
+    return [comments for comments in photo.comments if comments]

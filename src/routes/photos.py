@@ -218,23 +218,39 @@ async def transform_photo(
     )
     return photo
 
-@router.get("/")
-async def download_all_photos(
-        user_id: int,
-        current_user: User = Depends(auth_service.get_current_user),
-        db: Session = Depends(get_db),
-    ):
+
+@router.get("/{user_id}", response_model=list[PhotoOut])
+async def get_user_photos(
+    user_id: int,
+    current_user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+):
     """
-        Downloading the list of all photos uploaded by a specific user.
+    Get the list of all photos uploaded by a specific user.
 
-        Parameters:
-        - user_id (int): The ID of the user whose photos are to be downloaded.
-        - current_user (User, optional): Current authenticated user. Defaults to the user obtained from authentication service.
-        - db (Session, optional): Database session dependency. Defaults to the database session obtained from dependency injection.
+    Args:
+        user_id (int): The ID of the user whose photos are to be downloaded.
+        current_user (User, optional): Current authenticated user. Defaults to the user obtained from authentication service.
+        db (Session, optional): Database session dependency. Defaults to the database session obtained from dependency injection.
 
-        Returns:
-        dict: A dictionary containing the list of photos uploaded by the user. Each photo is represented as a dictionary with keys 'photo id' and 'photo file path'.
-        """
-
-    photos = await photos_repository.get_photos_list(user_id, db)
+    Returns:
+        list[PhotoOut]: The list of all photos uploaded by a specific user.
+    """
+    photos = await photos_repository.get_user_photos(user_id, db)
     return photos
+
+
+@router.get("/", response_model=list[PhotoOut])
+async def get_photos(
+    db: Session = Depends(get_db),
+):
+    """
+    Get all photos
+
+    Args:
+        db (Session): Database session
+
+    Returns:
+        list[PhotoOut]: The list of all photos
+    """
+    return await photos_repository.get_photos(db)
