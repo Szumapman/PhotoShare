@@ -81,6 +81,8 @@ async def transform_photo(
     Returns:
         tuple (str, list[dict]): URL of the transformed photo.
     """
+    validate_transformation_params(transformation_params)
+
     params = []
     if transformation_params.width:
         params.append({"width": transformation_params.width})
@@ -96,3 +98,114 @@ async def transform_photo(
         photo_public_id, transformation=params
     )[0]
     return transform_photo_url, params
+
+
+def validate_transformation_params(
+    transformation_params: TransformationParameters,
+) -> None:
+    """
+    Validate transformation parameters.
+
+    Args:
+         transformation_params (dict): Transformation parameters.
+
+    Raises:
+        ValueError: If transformation parameters are invalid.
+    """
+
+    if (
+        not isinstance(transformation_params.width, int)
+        or transformation_params.width <= 0
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Width must be a positive integer",
+        )
+
+    if (
+        not isinstance(transformation_params.height, int)
+        or transformation_params.height <= 0
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Height must be a positive integer",
+        )
+
+    if not transformation_params.crop:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Crop mode cannot be empty",
+        )
+    if (
+        len(transformation_params.effects) == 0
+    ):  # 'if not transformation_params.effects' didn't work
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Effects cannot be empty",
+        )
+
+    valid_crop_modes = {
+        "fill",
+        "lfill",
+        "fill_pad",
+        "crop",
+        "thumb",
+        "auto",
+        "scale",
+        "fit",
+        "limit",
+        "mfit",
+        "pad",
+        "lpad",
+        "mpad",
+        "imagga_scale",
+        "imagga_crop",
+    }
+    if transformation_params.crop not in valid_crop_modes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid crop mode. Supported modes are: "
+            + ", ".join(valid_crop_modes),
+        )
+
+    valid_effects = {
+        "art:al_dente",
+        "art:athena",
+        "art:audrey",
+        "art:aurora",
+        "art:daguerre",
+        "art:eucalyptus",
+        "art:fes",
+        "art:frost",
+        "art:hairspray",
+        "art:hokusai",
+        "art:incognito",
+        "art:linen",
+        "art:peacock",
+        "art:primavera",
+        "art:quartz",
+        "art:red_rock",
+        "art:refresh",
+        "art:sizzle",
+        "art:sonnet",
+        "art:ukulele",
+        "art:zorro",
+        "cartoonify",
+        "pixelate:value",
+        "saturation:value",
+        "blur:value",
+        "sepia",
+        "grayscale",
+        "vignette",
+    }
+
+    if len(transformation_params.effects) > 5:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You can select up to 5 effects.",
+        )
+    if any(effect not in valid_effects for effect in transformation_params.effects):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid effect. Supported modes are: " + ", ".join(valid_effects),
+        )
