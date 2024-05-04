@@ -135,6 +135,19 @@ async def update_avatar(email, url: str, db: Session) -> UserOut:
     )
 
 
+async def get_users(db: Session) -> list[UserOut]:
+    """
+    Retrieves all users from the database.
+
+    Parameters:
+    - db (Session): Database session dependency.
+
+    Returns:
+    list[UserOut]: The list of users.
+    """
+    return db.query(User).all()
+
+
 async def set_user_role(user_id: int, role: str, db: Session) -> UserOut:
     """
     Set the role of the user with the given email address in the database.

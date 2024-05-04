@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
-from src.database.models import Comment
+from src.database.models import Comment, Photo
 from src.schemas import CommentOut
 
 
@@ -102,3 +102,26 @@ async def delete_comment(comment_id: int, db: Session):
         date_posted=comment.date_posted,
         date_updated=comment.date_updated,
     )
+
+
+async def get_comments(photo_id: int, db: Session) -> list[CommentOut]:
+    """
+    Downloading the list of all comments associated with a specific photo.
+
+    Parameters:
+    - photo_id (int): The ID of the photo for which comments are to be downloaded.
+    - db (Session): Database session dependency.
+
+    Returns:
+        list[CommentOut]: The list of comments associated with a photo.
+
+    Raises:
+    - HTTPException:
+        - 404 NOT FOUND - If the specified photo does not exist.
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
+        )
+    return [comments for comments in photo.comments if comments]

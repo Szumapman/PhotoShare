@@ -10,18 +10,30 @@ from src.schemas import UserOut, UserRole
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-@router.get("/")
-async def index(
+@router.get("/", response_model=list[UserOut])
+async def get_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    """
+    Retrieves all users from the database.
+
+    Args:
+        db (Session, optional): Database session dependency.
+        current_user (User): Current authenticated user.
+
+    Returns:
+
+    Raises:
+        HTTPException: 403 FORBIDDEN - If the current user is not an admin.
+    """
     if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Unauthorized")
-    users = db.query(
-        User.id, User.username, User.email, User.created_at, User.is_active
-    ).all()
-    users_json = [user._asdict() for user in users]
-    return {"users": users_json}
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can get all users list.",
+        )
+
+    return await repository_users.get_users(db)
 
 
 @router.post("/activ_status/{user_id}")

@@ -109,30 +109,6 @@ class UserRole(BaseModel):
     role: UserRoleValid
 
 
-class PhotoOut(BaseModel):
-    """
-    Data model for retrieving photos.
-
-    Attributes:
-        id (int): The unique identifier of the photo.
-        file_path (str): The url to the photo.
-        qr_path (str): The url to the qr code leading to the photo.
-        transformation (Dict[str, str]): The transformation of the photo.
-        description (str): The description of the photo.
-        upload_date (datetime): The date the photo was uploaded.
-    """
-
-    id: int
-    file_path: str
-    qr_path: str
-    transformation: Dict[str, list] | None = None
-    description: str
-    upload_date: datetime
-
-    class Config:
-        from_attributes = True
-
-
 class CommentOut(BaseModel):
     id: int
     text: str
@@ -209,6 +185,31 @@ class TagOut(TagIn):
     """
 
     id: int
+
+    class Config:
+        from_attributes = True
+
+
+class PhotoOut(BaseModel):
+    """
+    Data model for retrieving photos.
+
+    Attributes:
+        id (int): The unique identifier of the photo.
+        file_path (str): The url to the photo.
+        qr_path (str): The url to the qr code leading to the photo.
+        transformation (Dict[str, str]): The transformation of the photo.
+        description (str): The description of the photo.
+        upload_date (datetime): The date the photo was uploaded.
+    """
+
+    id: int
+    file_path: str
+    qr_path: str
+    description: str
+    tags: list[TagOut]
+    transformation: Dict[str, list] | None = None
+    upload_date: datetime
 
     class Config:
         from_attributes = True
