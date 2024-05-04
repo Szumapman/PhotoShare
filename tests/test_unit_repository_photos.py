@@ -27,6 +27,8 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
             file_path="test_file_path",
             qr_path="test_qr_path",
             description="test",
+            tags=[],
+            transformation=None,
             upload_date=datetime.now(),
         )
         self.session.query().filter().first.return_value = photo
@@ -82,6 +84,19 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
             context.exception.detail, "Only owner of the photo or admin can delete it."
         )
 
+    async def test_get_photos(self):
+        photos = [
+            Photo(id=1, user_id=1),
+            Photo(id=2, user_id=2),
+            Photo(id=3, user_id=1),
+        ]
+        self.session.query.return_value.all.return_value = photos
+        result = await photos_repository.get_photos(db=self.session)
+        self.assertEqual(len(result), len(photos))
+        self.assertEqual(result[0].id, photos[0].id)
+        self.assertEqual(result[1].user_id, photos[1].user_id)
 
-if __name__ == "__main__":
-    unittest.main()
+    async def test_get_photo_empty(self):
+        self.session.query().return_value.all.return_value = []
+        result = await photos_repository.get_photos(db=self.session)
+        self.assertEqual(len(result), 0)
