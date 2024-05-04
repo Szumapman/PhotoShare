@@ -1,5 +1,6 @@
-from typing import List
-
+from typing import List, Optional
+import logging
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
@@ -200,3 +201,34 @@ async def get_photos(db: Session) -> list[PhotoOut]:
     """
     photos = db.query(Photo).all()
     return photos
+
+
+async def search_photos(
+    query: Optional[str], sort_by: str, db: Session
+) -> List[PhotoOut]:
+    """
+    Search and sort photos based on the query and sort criteria.
+
+    Args:
+        query (str | None): Keywords to search in photo descriptions or tags.
+        sort_by (str): Sorting criterion, either 'date' or 'rating'.
+        db (Session): Database session.
+
+    Returns:
+        List[PhotoOut]: List of photos matching the search criteria.
+    """
+    if sort_by not in ["date", "rating"]:
+        raise ValueError(f"Invalid sort option: {sort_by}")
+    base_query = db.query(Photo).join(Photo.tags)
+    base_query = base_query.filter(
+        or_(Photo.description.ilike(f"%{query}%"), Tag.tag_name.ilike(f"%{query}%"))
+    ).distinct()
+
+    if sort_by == "date":
+        base_query = base_query.order_by(Photo.upload_date.desc())
+    # elif sort_by == "rating":
+    #     base_query = base_query.order_by(Photo.rating.desc())
+
+    photos = base_query.all()
+
+    return [PhotoOut.from_orm(photo) for photo in photos if photos]

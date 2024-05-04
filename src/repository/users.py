@@ -1,9 +1,11 @@
+from typing import Optional, List
+
 from libgravatar import Gravatar
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from src.database.models import User, Photo
+from src.database.models import User, Photo, Tag
 from src.schemas import UserIn, UserOut, UserPublicProfile
 from src.services.auth import auth_service
 
@@ -239,7 +241,7 @@ async def get_user_public_profile(user_id: int, db: Session) -> UserPublicProfil
 
 
 async def update_current_user_profile(
-    user: UserOut, new_user_data: UserIn, db: Session
+        user: UserOut, new_user_data: UserIn, db: Session
 ) -> UserOut:
     """
     Update the current user in the database.
@@ -270,3 +272,32 @@ async def update_current_user_profile(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"User with id: {user.id} not found",
     )
+
+
+async def admin_moderator_search_users_with_photos(
+        username: Optional[str],
+        description: Optional[str],
+        tag: Optional[str],
+        db: Session
+) -> List[UserPublicProfile]:
+    query = db.query(User).join(Photo, User.id == Photo.user_id).distinct()
+
+    if username:
+        query = query.filter(User.username.ilike(f"%{username}%"))
+    if description:
+        query = query.filter(Photo.description.ilike(f"%{description}%"))
+    if tag:
+        query = query.join(Photo.tags).filter(Tag.tag_name.ilike(f"%{tag}%"))
+
+    query = query.group_by(User.id).order_by(User.created_at.desc())
+
+    user_list = query.all()
+    if not user_list:
+        return []
+
+    return [UserPublicProfile(
+        id=user.id,
+        username=user.username,
+        avatar=user.avatar,
+        photo_count=db.query(func.count(Photo.id)).filter(Photo.user_id == user.id).scalar()
+    ) for user in user_list]

@@ -1,11 +1,11 @@
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import User
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Query
 from src.services.auth import auth_service
 from src.repository import users as repository_users
-from src.schemas import UserOut, UserRole
-
+from src.schemas import UserOut, UserRole, UserPublicProfile
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -77,3 +77,17 @@ async def set_role(
             detail="Only admin users are allowed to set the role of users",
         )
     return await repository_users.set_user_role(user_id, new_role.role, db)
+
+
+@router.get("/users_with_photos", response_model=List[UserPublicProfile])
+async def search_users_with_photos(
+    username: Optional[str] = Query(None, description="Search by username"),
+    description: Optional[str] = Query(None, description="Search by photo description"),
+    tag: Optional[str] = Query(None, description="Search by photo tag"),
+    db: Session = Depends(get_db),
+    current_user: UserOut = Depends(auth_service.get_current_user),
+) -> List[UserPublicProfile]:
+    if current_user.role not in ["admin", "moderator"]:
+        raise HTTPException(status_code=403, detail="Unauthorized access")
+    users = await repository_users.admin_moderator_search_users_with_photos(username, description, tag, db)
+    return users
