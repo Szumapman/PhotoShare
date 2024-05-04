@@ -71,7 +71,6 @@ async def create_qr_code(photo_url: str) -> str:
 async def transform_photo(
     photo: PhotoOut, transformation_params: TransformationParameters
 ) -> (str, list[str]):
-
     """
     Function to perform transformations on a photo.
 
