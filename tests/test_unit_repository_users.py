@@ -92,6 +92,3 @@ class TestUsers(unittest.IsolatedAsyncioTestCase):
         )
         self.assertTrue(updated_password_correct)
 
-
-# if __name__ == "__main__":
-#     unittest.main()
