@@ -21,20 +21,20 @@ class TestUsers(unittest.IsolatedAsyncioTestCase):
                 username="user1",
                 email="test@email.com",
                 password="testPass1!",
-                role='standard',
-                ),
+                role="standard",
+            ),
             User(
                 id=2,
                 username="user2",
                 email="test2@email.com",
                 password="testPass2!",
-                role='standard',
-                ),
+                role="standard",
+            ),
         ]
         self.user = User(id=1)
 
     async def test_update_current_user_profile_email_exists(self):
-        
+
         new_user_data = UserIn(
             username="user2",
             email="test2@email.com",
@@ -49,8 +49,8 @@ class TestUsers(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             str(context.exception.detail),
             f"Account with {new_user_data.email} already exists.",
-            )
-        
+        )
+
     async def test_update_current_user_profile_user_not_found(self):
         new_user_data = UserIn(
             username="user2",
@@ -87,10 +87,11 @@ class TestUsers(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(updated_user.email, new_user_data.email)
 
         updated_user_password = updated_user.password
-        updated_password_correct = auth_service.verify_password(new_user_data.password, updated_user_password)
+        updated_password_correct = auth_service.verify_password(
+            new_user_data.password, updated_user_password
+        )
         self.assertTrue(updated_password_correct)
 
 
-
-if __name__ == "__main__":
-    unittest.main()
+# if __name__ == "__main__":
+#     unittest.main()
