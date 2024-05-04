@@ -157,4 +157,5 @@ cython_debug/
 postgres-data/
 
 #Test database
-/tests/test.db
+tests/test.db
+test.db
