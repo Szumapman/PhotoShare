@@ -6,9 +6,7 @@ from typing import List, Dict
 from pydantic import BaseModel, Field, EmailStr, field_validator
 
 from src.conf.constant import (
-    MAX_DESCRIPTION_LENGTH,
     MAX_TAG_NAME_LENGTH,
-    MAX_COMMENT_LENGTH,
     MAX_USERNAME_LENGTH,
 )
 
@@ -30,7 +28,7 @@ class UserIn(BaseModel):
 
     """
 
-    username: str = Field(min_length=4, max_length=16)
+    username: str = Field(min_length=4, max_length=MAX_USERNAME_LENGTH)
     email: EmailStr = Field(max_length=150, unique=True)
     password: str = Field(min_length=6, max_length=30)
 
@@ -170,18 +168,27 @@ class TransformationParameters(BaseModel):
     Data model for transformation parameters.
 
     Attributes:
+        background (str): The background color of the transformation (e.g. blue, red).
+        aspect_ratio (str): The aspect ratio of the transformation (e.g. 16:10)
+        gravity (str): The gravity of the transformation (e.g. south, west).
+        angle (int): The angle of the transformation (e.g. -30 or 20).
         width (int): The width of the transformed image.
         height (int): The height of the transformed image.
         crop (str): The crop effects like:
             fill, lfill, fill_pad, crop, thumb, auto, scale, fit, limit, mfit, pad, lpad, mpad, imagga_scale, imagga_crop
-            cloudinary docs: https://cloudinary.com/documentation/resizing_and_cropping#resize_and_crop_modes
         effects (list[str]): The cloudinary transformation effects like:
             art:al_dente/athena/audrey/aurora/daguerre/eucalyptus/fes/frost/hairspray/hokusai/incognito/linen/peacock
                 /primavera/quartz/red_rock/refresh/sizzle/sonnet/ukulele/zorro,
-            cartoonify, pixelate:value (e.g. 20), saturation:value (e.g. 50) blur:value (e.g. 50), sepia, grayscale, vignette
+            cartoonify, pixelate, saturation, blur, sepia, grayscale, vignette - you can add :value (e.g. 20)
+
         more info:
+            cloudinary docs: https://cloudinary.com/documentation/transformation_reference
     """
 
+    background: str = ""
+    aspect_ratio: str = ""
+    gravity: str = ""
+    angle: int = 0
     width: int = 0
     height: int = 0
     crop: str = ""
@@ -193,7 +200,7 @@ class TagIn(BaseModel):
     Data model for enter tags.
 
     Attributes:
-        name (str): The name of the tag.
+        tag_name (str): The name of the tag.
     """
 
     tag_name: str = Field(max_items=MAX_TAG_NAME_LENGTH)

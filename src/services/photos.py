@@ -81,18 +81,27 @@ async def transform_photo(
     Returns:
         tuple (str, list[dict]): URL of the transformed photo.
     """
-    validate_transformation_params(transformation_params)
+    # validate_transformation_params(transformation_params)
 
     params = []
-    if transformation_params.width:
+    if transformation_params.background:
+        params.append({"background": transformation_params.background})
+    if transformation_params.angle:
+        params.append({"angle": transformation_params.angle})
+    if transformation_params.width and transformation_params.width > 0:
         params.append({"width": transformation_params.width})
-    if transformation_params.height:
+    if transformation_params.height and transformation_params.height > 0:
         params.append({"height": transformation_params.height})
     if transformation_params.crop:
         params.append({"crop": transformation_params.crop})
     if transformation_params.effects:
         for effect in transformation_params.effects:
             params.append({"effect": effect})
+    if not params:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No valid transformations were provided.",
+        )
     photo_public_id = f"{CLOUDINARY_PARAMS['photo_public_id_prefix']}/{await _get_cloudinary_public_ip(photo.file_path)}"
     transform_photo_url = cloudinary.utils.cloudinary_url(
         photo_public_id, transformation=params
