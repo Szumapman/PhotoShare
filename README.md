@@ -131,11 +131,17 @@ Dokumentacja API jest automatycznie generowana przez FastAPI i można uzyskać d
 ## Przykłady użycia
 
 ### Wczytywanie zdjęcia z opisem i tagami
+#### Autoryzacja użytkownika
+<img src="images/0.jpg">
 
-![auth_of_user]("images/0.jpg")
-![list_of_enpoints_for_photos]("images/1.jpg")
-![photo_upload]("images/2.jpg")
-![server_respons]("images/3.jpg")
+#### Lista dostępnych endpoints dla zdjęć
+<img src="images/1.jpg">
+
+#### Wczytywanie wybranego zdjęcia, dodawanie opisu i tagów
+<img src="images/2.jpg">
+
+#### Odpowiedź ze serwera
+<img src="images/3.jpg">
 
 ## Licencja
 
