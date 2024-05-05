@@ -220,3 +220,15 @@ class PhotoOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PhotoSearchOut(BaseModel):
+    id: int
+    file_path: str
+    qr_path: str
+    description: str
+    tags: list[TagOut]
+    upload_date: datetime
+
+    class Config:
+        from_attributes = True
