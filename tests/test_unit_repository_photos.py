@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from src.database.models import Photo
-from src.schemas import PhotoOut, UserOut
+from src.schemas import PhotoOut, UserOut, PhotoSearchOut
 from src.repository import photos as photos_repository
 
 
@@ -86,15 +86,39 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
 
     async def test_get_photos(self):
         photos = [
-            Photo(id=1, user_id=1),
-            Photo(id=2, user_id=2),
-            Photo(id=3, user_id=1),
+            PhotoSearchOut(
+                id=1,
+                file_path="path/to/photo2.jpg",
+                qr_path="path/to/qr_photo2.jpg",
+                description="Sunset view",
+                upload_date=datetime(2021, 1, 1),
+                tags=[],
+            ),
+            PhotoSearchOut(
+                id=2,
+                file_path="path/to/photo2.jpg",
+                qr_path="path/to/qr_photo2.jpg",
+                description="Sunset view",
+                upload_date=datetime(2021, 1, 2),
+                tags=[],
+            ),
+            PhotoSearchOut(
+                id=3,
+                file_path="path/to/photo3.jpg",
+                qr_path="path/to/qr_photo3.jpg",
+                description="Nature and wildlife on mountain",
+                upload_date=datetime(2021, 1, 3),
+                tags=[],
+            ),
+            # PhotoO(id=1, user_id=1),
+            # Photo(id=2, user_id=2),
+            # Photo(id=3, user_id=1),
         ]
         self.session.query.return_value.all.return_value = photos
         result = await photos_repository.get_photos(db=self.session)
         self.assertEqual(len(result), len(photos))
         self.assertEqual(result[0].id, photos[0].id)
-        self.assertEqual(result[1].user_id, photos[1].user_id)
+        self.assertEqual(result[1].id, photos[1].id)
 
     async def test_get_photo_empty(self):
         self.session.query().return_value.all.return_value = []

@@ -244,4 +244,4 @@ async def search_photos(
 
     photos = query_base.all()
 
-    return [PhotoSearchOut.from_orm(photo) for photo in photos if photos]
+    return [PhotoSearchOut.model_validate(Photo) for photo in photos if photos]
