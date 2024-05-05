@@ -5,7 +5,7 @@ from fastapi import HTTPException, status, File
 import cloudinary
 import cloudinary.uploader
 
-from src.conf.config import CLOUDINARY_CONFIG, CLOUDINARY_PARAMS
+from src.conf.cloudinary_conf import CLOUDINARY_CONFIG, CLOUDINARY_PARAMS
 from src.schemas import PhotoOut, TransformationParameters
 
 

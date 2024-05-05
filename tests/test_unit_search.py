@@ -60,10 +60,11 @@ class TestPhotos(unittest.IsolatedAsyncioTestCase):
             PhotoTag(photo_id=2, tag_id=2),
             PhotoTag(photo_id=3, tag_id=3),
         ]
+        self.date_desc =
 
     async def test_search_photos_with_query(self):
         self.query_mock.all.return_value = [self.photos[0]]
-        result = await search_photos("mountain", "date", self.session)
+        result = await search_photos("mountain", "date-", self.session)
         self.query_mock.filter.assert_called_once()
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].description, "Beautiful mountain")
