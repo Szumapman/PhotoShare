@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey, JSON, UniqueConstraint
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.orm import relationship, declarative_base
 from src.conf.constant import (
@@ -43,6 +43,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     photos = relationship("Photo", back_populates="user")
     comments = relationship("Comment", back_populates="user")
+    rights = relationship("Right", back_populates="user")
 
 
 class Photo(Base):
@@ -73,6 +74,7 @@ class Photo(Base):
     user = relationship("User", back_populates="photos")
     comments = relationship("Comment", back_populates="photo")
     tags = relationship("Tag", secondary="photo_tags", back_populates="photos")
+    ratings = relationship("Rating", back_populates="photo")
 
 
 class Comment(Base):
@@ -134,3 +136,16 @@ class PhotoTag(Base):
     __tablename__ = "photo_tags"
     photo_id = Column(Integer, ForeignKey("photos.id"), primary_key=True)
     tag_id = Column(Integer, ForeignKey("tags.id"), primary_key=True)
+
+
+class Rating(Base):
+    __tablename__ = "ratings"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    photo_id = Column(Integer, ForeignKey("photos.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    score = Column(Integer, nullable=False)
+
+    photo = relationship("Photo", back_populates="ratings")
+    user = relationship("User", back_populates="ratings")
+
+    __table_args__ = (UniqueConstraint("photo_id", "user_id", name="photo_user_uc"),)

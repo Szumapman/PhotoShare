@@ -10,11 +10,13 @@ from fastapi import (
     status,
     Query,
 )
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.database.models import User, Photo
-from src.schemas import PhotoOut, UserOut, TransformationParameters
+from src.database.models import User, Photo, Rating
+from src.routes.users import get_current_user
+from src.schemas import PhotoOut, UserOut, TransformationParameters, RatingCreate, RatingOut
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
 from src.services import photos as photos_services
@@ -291,3 +293,57 @@ async def search_photos(
             detail="Query must be provided",
         )
     return await photos_repository.search_photos(query, sort_by, db)
+
+
+@router.post("/photos/{photo_id}/rate", response_model=RatingOut)
+async def rate_photo(
+        photo_id: int,
+        rating_in: RatingCreate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    photo = db.query(Photo).filter(Photo.id == photo_id).one_or_none()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Photo not found")
+
+    if photo.user_id == current_user.id:
+        raise HTTPException(status_code=403, detail="You cannot rate your own photo")
+
+    rating = db.query(Rating).filter_by(photo_id=photo_id, user_id=current_user.id).first()
+    if rating:
+        rating.score = rating_in.score
+    else:
+        rating = Rating(photo_id=photo_id, user_id=current_user.id, score=rating_in.score)
+        db.add(rating)
+    db.commit()
+    return {"photo_id": photo_id, "user_id": current_user.id, "score": rating.score}
+
+
+@router.get("/photos/{photo_id}/rating")
+async def get_photo_rating(
+    photo_id: int,
+    db: Session = Depends(get_db)
+):
+    average_score = db.query(func.avg(Rating.score)).filter(Rating.photo_id == photo_id).scalar()
+    if average_score is None:
+        raise HTTPException(status_code=404, detail="No ratings yet for this photo")
+    return {"photo_id": photo_id, "average_rating": average_score}
+
+
+@router.delete("/photos/{photo_id}/ratings/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_rating(
+        photo_id: int,
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    if current_user.role not in ["admin", "moderator"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+
+    rating = db.query(Rating).filter_by(photo_id=photo_id, user_id=user_id).first()
+    if not rating:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found")
+
+    db.delete(rating)
+    db.commit()
+    return {"detail": "Rating deleted"}

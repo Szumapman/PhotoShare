@@ -1,20 +1,20 @@
 from typing import List, Optional
 import logging
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from src.database.models import Photo, Tag, PhotoTag, User
+from src.database.models import Photo, Tag, PhotoTag, User, Rating
 from src.schemas import PhotoOut, UserOut
 
 
 async def upload_photo(
-    file_path: str,
-    qr_code_url: str,
-    user_id: int,
-    description: str,
-    tags: List[str],
-    db: Session,
+        file_path: str,
+        qr_code_url: str,
+        user_id: int,
+        description: str,
+        tags: List[str],
+        db: Session,
 ) -> PhotoOut:
     """
     Upload new photo to database
@@ -80,7 +80,7 @@ async def get_photo_by_id(photo_id: int, db: Session) -> PhotoOut | None:
 
 
 def update_photo_description(
-    photo_id: int, new_description: str, current_user: UserOut, db: Session
+        photo_id: int, new_description: str, current_user: UserOut, db: Session
 ):
     """
     Update photo description
@@ -142,7 +142,7 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
 
 
 async def add_transformation(
-    photo: PhotoOut, transform_photo_url: str, params: list, db: Session
+        photo: PhotoOut, transform_photo_url: str, params: list, db: Session
 ) -> PhotoOut:
     """
     Add a new transformation to the photo.
@@ -204,7 +204,7 @@ async def get_photos(db: Session) -> list[PhotoOut]:
 
 
 async def search_photos(
-    query: Optional[str], sort_by: str, db: Session
+        query: Optional[str], sort_by: str, db: Session
 ) -> List[PhotoOut]:
     """
     Search and sort photos based on the query and sort criteria.
@@ -226,9 +226,28 @@ async def search_photos(
 
     if sort_by == "date":
         base_query = base_query.order_by(Photo.upload_date.desc())
-    # elif sort_by == "rating":
-    #     base_query = base_query.order_by(Photo.rating.desc())
+    elif sort_by == "rating":
+        base_query = base_query.order_by(Photo.ratings.desc())
 
     photos = base_query.all()
 
     return [PhotoOut.from_orm(photo) for photo in photos if photos]
+
+
+def set_user_rating(db: Session, photo_id: int, user_id, score: int):
+    rating = db.query(Rating).filter(Rating.photo_id, Rating.user_id == user_id).filter()
+    if rating:
+        rating.score = score
+    else:
+        rating = Rating(photo_id=photo_id, user_id=user_id, score=score)
+        db.add(rating)
+    db.commit()
+    return rating
+
+
+def get_photo_rating(db: Session, photo_id: int):
+    ratings = db.query(Rating).filter(Rating.photo_id == photo_id).all()
+    if ratings:
+        average_score = Session.query(func.avg(Rating.score)).scalar()
+        return average_score
+    return None

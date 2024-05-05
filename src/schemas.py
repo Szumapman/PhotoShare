@@ -220,3 +220,16 @@ class PhotoOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RatingCreate(BaseModel):
+    score: int = Field(..., ge=1, le=5, description="The rating score from 1 to 5")
+
+
+class RatingOut(BaseModel):
+    photo_id: int
+    user_id: int
+    score: int
+
+    class Config:
+        from_attributes = True
