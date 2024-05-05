@@ -223,6 +223,17 @@ class PhotoOut(BaseModel):
 
 
 class PhotoSearchOut(BaseModel):
+    """
+    Data model for returning photos for all app users (without transformation).
+
+    Attributes:
+        id (int): The unique identifier of the photo.
+        file_path (str): The url to the photo.
+        qr_path (str): The url to the qr code leading to the photo.
+        description (str): The description of the photo.
+        tags (list[TagOut]): The tags of the photo.
+        upload_date (datetime): The date the photo was uploaded.
+    """
     id: int
     file_path: str
     qr_path: str
