@@ -234,6 +234,7 @@ class PhotoSearchOut(BaseModel):
         tags (list[TagOut]): The tags of the photo.
         upload_date (datetime): The date the photo was uploaded.
     """
+
     id: int
     file_path: str
     qr_path: str

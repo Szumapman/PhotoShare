@@ -29,14 +29,7 @@ async def add_comment(
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)
-    return CommentOut(
-        id=new_comment.id,
-        text=new_comment.text,
-        user_id=new_comment.user_id,
-        photo_id=new_comment.photo_id,
-        date_posted=new_comment.date_posted,
-        date_updated=new_comment.date_updated,
-    )
+    return CommentOut.from_orm(new_comment)
 
 
 async def update_comment(
@@ -76,14 +69,7 @@ async def update_comment(
         raise HTTPException(
             status_code=400, detail="Error updating comment: {}".format(str(e))
         )
-    return CommentOut(
-        id=comment.id,
-        text=comment.text,
-        user_id=comment.user_id,
-        photo_id=comment.photo_id,
-        date_posted=comment.date_posted,
-        date_updated=comment.date_updated,
-    )
+    return CommentOut.from_orm(comment)
 
 
 async def delete_comment(comment_id: int, db: Session):
@@ -94,14 +80,7 @@ async def delete_comment(comment_id: int, db: Session):
         )
     db.delete(comment)
     db.commit()
-    return CommentOut(
-        id=comment.id,
-        text=comment.text,
-        user_id=comment.user_id,
-        photo_id=comment.photo_id,
-        date_posted=comment.date_posted,
-        date_updated=comment.date_updated,
-    )
+    return CommentOut.from_orm(comment)
 
 
 async def get_comments(photo_id: int, db: Session) -> list[CommentOut]:

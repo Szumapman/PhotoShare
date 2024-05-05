@@ -48,7 +48,7 @@ async def create_comment(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Comment cannot be longer than {MAX_COMMENT_LENGTH} characters.",
         )
-    photo = photo_repository.get_photo_by_id(photo_id, db)
+    photo = await photo_repository.get_photo_by_id(photo_id, db)
     if not photo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
