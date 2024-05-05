@@ -132,10 +132,10 @@ Dokumentacja API jest automatycznie generowana przez FastAPI i można uzyskać d
 
 ### Wczytywanie zdjęcia z opisem i tagami
 
-![auth_of_user]("C:\Users\Betty\Desktop\ZDJĘCIA DO APPKI\0.jpg")
-![list_of_enpoints_for_photos]("C:\Users\Betty\Desktop\ZDJĘCIA DO APPKI\1.jpg")
-![photo_upload]("C:\Users\Betty\Desktop\ZDJĘCIA DO APPKI\2.jpg")
-![server_respons]("C:\Users\Betty\Desktop\ZDJĘCIA DO APPKI\3.jpg")
+![auth_of_user]("images/0.jpg")
+![list_of_enpoints_for_photos]("images/1.jpg")
+![photo_upload]("images/2.jpg")
+![server_respons]("images/3.jpg")
 
 ## Licencja
 
