@@ -252,7 +252,7 @@ async def get_user_photos(
     return photos
 
 
-@router.get("/", response_model=list[PhotoOut])
+@router.get("/", response_model=list[PhotoSearchOut])
 async def get_photos(
     db: Session = Depends(get_db),
 ):
@@ -263,7 +263,7 @@ async def get_photos(
         db (Session): Database session
 
     Returns:
-        list[PhotoOut]: The list of all photos
+        list[PhotoSearchOut]: The list of all photos
     """
     return await photos_repository.get_photos(db)
 

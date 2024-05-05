@@ -191,7 +191,7 @@ async def get_user_photos(user_id: int, db: Session) -> list[PhotoOut]:
     return photos
 
 
-async def get_photos(db: Session) -> list[PhotoOut]:
+async def get_photos(db: Session) -> list[PhotoSearchOut]:
     """
     Get the list of all photos.
 
@@ -202,7 +202,7 @@ async def get_photos(db: Session) -> list[PhotoOut]:
         list[PhotoOut]: List of photos.
     """
     photos = db.query(Photo).all()
-    return photos
+    return [PhotoSearchOut.from_orm(photo) for photo in photos if photos]
 
 
 async def search_photos(
