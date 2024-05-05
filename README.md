@@ -81,10 +81,33 @@ cd PhotoShare
 ```pip install -r requirements.txt```
 
 ### 4. Konfiguracja środowiska:
+
+#### Docker Compose
+Przed uruchomieniem aplikacji lokalnie upewnij się, że masz zainstalowany **Docker Compose**.
+Uruchom poniższe polecenie w terminalu, aby zbudować i uruchomić kontenery:
+
+```
+docker-compose up -d 
+```
+
+#### Baza danych PostgreSQL
+Po uruchomieniu kontenerów Docker Compose, aplikacja automatycznie utworzy bazę danych PostgreSQL.
+
+#### Migracje Alembic
+Po uruchomieniu kontenerów Docker Compose wykonaj migracje Alembic, aby zastosować schemat bazy danych:
+```
+alembic upgrade head
+```
+
+#### Redis
+Redis jest używany do przechowywania danych podręcznych. Kontener Redis jest automatycznie uruchamiany wraz z innymi kontenerami Docker Compose.
+
+#### Konfiguracja
 Utwórz plik `.env` w głównym katalogu i podaj niezbędne zmienne środowiskowe zgodnie z przykładowym plikiem `env`.
 
+
 ## Uruchomienie aplikacji:
-Uruchom aplikację za pomocą następującej komendy:
+Po skonfigurowaniu środowiska uruchom aplikację lokalnie za pomocą następującej komendy:
 
 ```
 uvicorn main:app --reload
@@ -105,8 +128,14 @@ Dokumentacja API jest automatycznie generowana przez FastAPI i można uzyskać d
 - **Administracja:** Administratorzy mają dostęp do dodatkowych funkcji, takich jak zarządzanie użytkownikami i moderowanie treści.
 
 
+## Przykłady użycia
 
+### Wczytywanie zdjęcia z opisem i tagami
 
+![auth_of_user]("C:\Users\Betty\Desktop\ZDJĘCIA DO APPKI\0.jpg")
+![list_of_enpoints_for_photos]("C:\Users\Betty\Desktop\ZDJĘCIA DO APPKI\1.jpg")
+![photo_upload]("C:\Users\Betty\Desktop\ZDJĘCIA DO APPKI\2.jpg")
+![server_respons]("C:\Users\Betty\Desktop\ZDJĘCIA DO APPKI\3.jpg")
 
 ## Licencja
 
