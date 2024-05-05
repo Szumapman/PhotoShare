@@ -1,11 +1,12 @@
 from typing import List, Optional
-import logging
+
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from src.database.models import Photo, Tag, PhotoTag, User
-from src.schemas import PhotoOut, UserOut
+from src.schemas import PhotoOut, UserOut, PhotoSearchOut
+from src.conf.constant import PHOTO_SEARCH_ENUMS
 
 
 async def upload_photo(
@@ -206,30 +207,41 @@ async def get_photos(db: Session) -> list[PhotoOut]:
 
 async def search_photos(
     query: Optional[str], sort_by: str, db: Session
-) -> List[PhotoOut]:
+) -> List[PhotoSearchOut]:
     """
     Search and sort photos based on the query and sort criteria.
 
     Args:
         query (str | None): Keywords to search in photo descriptions or tags.
-        sort_by (str): Sorting criterion, either 'date' or 'rating'.
+        sort_by (str): Sorting criterion, either 'date' or 'rating' with -desc or -asc info.
         db (Session): Database session.
 
     Returns:
-        List[PhotoOut]: List of photos matching the search criteria.
+        List[PhotoSearchOut]: List of photos matching the search criteria.
+
+    Raises:
+        HTTPException: 502 Bad Gateway if invalid sort option is provided.
     """
-    if sort_by not in ["date", "rating"]:
-        raise ValueError(f"Invalid sort option: {sort_by}")
-    base_query = db.query(Photo).join(Photo.tags)
-    base_query = base_query.filter(
-        or_(Photo.description.ilike(f"%{query}%"), Tag.tag_name.ilike(f"%{query}%"))
-    ).distinct()
+    if sort_by not in PHOTO_SEARCH_ENUMS:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Invalid sort option: {sort_by}",
+        )
+    query_base = db.query(Photo).filter(
+        or_(
+            Photo.description.ilike(f"%{query}%"),
+            Photo.tags.any(Tag.tag_name.ilike(f"%{query}%")),
+        )
+    )
+    field, sort = sort_by.split("-")
+    if field == "upload_date":
+        query_base = query_base.order_by(
+            Photo.upload_date.desc() if sort == "desc" else Photo.upload_date.asc()
+        )
+    # add when rating ready
+    # elif field == "rating":
+    #     query_base = query_base.order_by(Photo.rating.desc() if sort == "desc" else Photo.reating.asc())
 
-    if sort_by == "date":
-        base_query = base_query.order_by(Photo.upload_date.desc())
-    # elif sort_by == "rating":
-    #     base_query = base_query.order_by(Photo.rating.desc())
+    photos = query_base.all()
 
-    photos = base_query.all()
-
-    return [PhotoOut.from_orm(photo) for photo in photos if photos]
+    return [PhotoSearchOut.from_orm(photo) for photo in photos if photos]

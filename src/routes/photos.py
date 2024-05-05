@@ -13,12 +13,16 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.database.models import User, Photo
-from src.schemas import PhotoOut, UserOut, TransformationParameters
+from src.database.models import User
+from src.schemas import PhotoOut, UserOut, TransformationParameters, PhotoSearchOut
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
 from src.services import photos as photos_services
-from src.conf.constant import MAX_DESCRIPTION_LENGTH, MAX_TAG_NAME_LENGTH
+from src.conf.constant import (
+    MAX_DESCRIPTION_LENGTH,
+    MAX_TAG_NAME_LENGTH,
+    PHOTO_SEARCH_ENUMS,
+)
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
@@ -264,18 +268,18 @@ async def get_photos(
     return await photos_repository.get_photos(db)
 
 
-@router.get("/photo/search", response_model=List[PhotoOut])
+@router.get("/photo/search", response_model=list[PhotoSearchOut])
 async def search_photos(
     query: Optional[str] = Query(
         None, description="Search by keywords in description or tags"
     ),
     sort_by: Optional[str] = Query(
-        "date",
-        enum=["date"],
+        PHOTO_SEARCH_ENUMS[0],
+        enum=PHOTO_SEARCH_ENUMS,
         description="Sort by date or rating",  # "rating" to add to enum when ready
     ),
     db: Session = Depends(get_db),
-) -> List[PhotoOut]:
+):
     """
     Search photos based on description or tags and optionally sort them.
 
