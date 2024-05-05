@@ -59,17 +59,10 @@ async def create_user(body: UserIn, db: Session) -> UserOut:
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return UserOut(
-        id=new_user.id,
-        username=new_user.username,
-        email=new_user.email,
-        role=new_user.role,
-        avatar=new_user.avatar,
-        is_active=new_user.is_active,
-    )
+    return UserOut.from_orm(new_user)
 
 
-async def update_token(user: UserOut, token: str | None, db: Session) -> None:
+async def update_token(user: User, token: str | None, db: Session) -> None:
     """
     Update the refresh token for a given user in the database.
     Args:
@@ -241,7 +234,7 @@ async def get_user_public_profile(user_id: int, db: Session) -> UserPublicProfil
 
 
 async def update_current_user_profile(
-        user: UserOut, new_user_data: UserIn, db: Session
+    user: UserOut, new_user_data: UserIn, db: Session
 ) -> UserOut:
     """
     Update the current user in the database.
@@ -275,10 +268,7 @@ async def update_current_user_profile(
 
 
 async def admin_moderator_search_users_with_photos(
-        username: Optional[str],
-        description: Optional[str],
-        tag: Optional[str],
-        db: Session
+    username: Optional[str], description: Optional[str], tag: Optional[str], db: Session
 ) -> List[UserPublicProfile]:
     query = db.query(User).join(Photo, User.id == Photo.user_id).distinct()
 
@@ -295,9 +285,14 @@ async def admin_moderator_search_users_with_photos(
     if not user_list:
         return []
 
-    return [UserPublicProfile(
-        id=user.id,
-        username=user.username,
-        avatar=user.avatar,
-        photo_count=db.query(func.count(Photo.id)).filter(Photo.user_id == user.id).scalar()
-    ) for user in user_list]
+    return [
+        UserPublicProfile(
+            id=user.id,
+            username=user.username,
+            avatar=user.avatar,
+            photo_count=db.query(func.count(Photo.id))
+            .filter(Photo.user_id == user.id)
+            .scalar(),
+        )
+        for user in user_list
+    ]

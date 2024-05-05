@@ -51,24 +51,7 @@ async def signup(
     background_tasks.add_task(
         send_email, new_user.email, new_user.username, request.base_url
     )
-
-    try:
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-    except Exception as e:
-        print("Error while saving user to database:", e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error while saving user to database",
-        )
-    return UserOut(
-        id=new_user.id,
-        username=new_user.username,
-        email=new_user.email,
-        role=new_user.role,
-        avatar=new_user.avatar,
-    )
+    return new_user
 
 
 @router.post("/login", response_model=TokenModel)
