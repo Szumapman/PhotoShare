@@ -58,6 +58,7 @@ async def upload_photo(
         qr_path=new_photo.qr_path,
         transformation=new_photo.transformation,
         description=new_photo.description,
+        tags=new_photo.tags,
         upload_date=new_photo.upload_date,
     )
 

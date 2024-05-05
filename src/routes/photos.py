@@ -23,7 +23,12 @@ from src.conf.constant import MAX_DESCRIPTION_LENGTH, MAX_TAG_NAME_LENGTH
 router = APIRouter(prefix="/photos", tags=["photos"])
 
 
-@router.post("/", response_model=PhotoOut)
+@router.post(
+    "/",
+    response_model=PhotoOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Photo uploaded successfully",
+)
 async def upload_photo(
     file: UploadFile = File(),
     description: str = Form(""),
