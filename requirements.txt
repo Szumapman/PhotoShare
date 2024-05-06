@@ -15,7 +15,6 @@ fastapi-mail
 cloudinary
 bcrypt
 qrcode
-qrcode[pil]
 fastapi-limiter
 
 
