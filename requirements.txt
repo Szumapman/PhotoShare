@@ -15,6 +15,7 @@ fastapi-mail~=1.4.1
 cloudinary~=1.40.0
 bcrypt~=4.1.2
 qrcode[pil]~=7.4.2
+qrcode
 
 
 
