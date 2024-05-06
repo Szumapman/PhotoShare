@@ -3,7 +3,7 @@ import unittest
 from fastapi import HTTPException, status
 
 from src.database.models import Base, User, Photo, Tag, PhotoTag
-from tests.db_test_config import engine, testing_session_local
+from tests.repository.db_test_config import engine, testing_session_local
 from src.repository.tags import (
     get_tags,
     add_tag,
@@ -79,26 +79,30 @@ class TestRepositoryTags(unittest.IsolatedAsyncioTestCase):
         self.tag_4 = Tag(tag_name="tag_4")
         self.tag_5 = Tag(tag_name="tag_5")
         self.tag_6 = Tag(tag_name="tag_6")
-        self.db.add(self.user_admin)
-        self.db.add(self.user_moderator)
-        self.db.add(self.user)
-        self.db.add(self.user_2)
-        self.db.add(self.photo_1)
-        self.db.add(self.photo_2)
-        self.db.add(self.photo_3)
-        self.db.add(self.tag_1)
-        self.db.add(self.tag_2)
-        self.db.add(self.tag_3)
-        self.db.add(self.tag_4)
-        self.db.add(self.tag_5)
-        self.db.add(self.tag_6)
-        self.db.add(PhotoTag(photo_id=1, tag_id=1))
-        self.db.add(PhotoTag(photo_id=1, tag_id=2))
-        self.db.add(PhotoTag(photo_id=1, tag_id=3))
-        self.db.add(PhotoTag(photo_id=1, tag_id=4))
-        self.db.add(PhotoTag(photo_id=2, tag_id=1))
-        self.db.add(PhotoTag(photo_id=2, tag_id=5))
-        self.db.add(PhotoTag(photo_id=2, tag_id=6))
+        self.db.add_all(
+            [
+                self.user_admin,
+                self.user_moderator,
+                self.user,
+                self.user_2,
+                self.photo_1,
+                self.photo_2,
+                self.photo_3,
+                self.tag_1,
+                self.tag_2,
+                self.tag_3,
+                self.tag_4,
+                self.tag_5,
+                self.tag_6,
+                PhotoTag(photo_id=1, tag_id=1),
+                PhotoTag(photo_id=1, tag_id=2),
+                PhotoTag(photo_id=1, tag_id=3),
+                PhotoTag(photo_id=1, tag_id=4),
+                PhotoTag(photo_id=2, tag_id=1),
+                PhotoTag(photo_id=2, tag_id=5),
+                PhotoTag(photo_id=2, tag_id=6),
+            ]
+        )
         self.db.commit()
 
     def tearDown(self):

@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 
 from src.repository.comments import add_comment, update_comment, delete_comment
 from src.database.models import Base, User, Photo, PhotoTag, Comment, Tag
-from tests.db_test_config import engine, testing_session_local
+from tests.repository.db_test_config import engine, testing_session_local
 
 
 class TestComments(unittest.IsolatedAsyncioTestCase):
