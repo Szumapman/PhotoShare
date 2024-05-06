@@ -14,7 +14,7 @@ async def upload_photo(
     qr_code_url: str,
     user_id: int,
     description: str,
-    tags: List[str],
+    tags: List[str] | None,
     db: Session,
 ) -> PhotoOut:
     """
@@ -39,19 +39,19 @@ async def upload_photo(
     )
     db.add(new_photo)
     db.commit()
-
-    for tag_name in set(tags):
-        tag_name = tag_name.strip().lower()
-        if tag_name:
-            tag = db.query(Tag).filter(Tag.tag_name == tag_name).first()
-            if not tag:
-                tag = Tag(tag_name=tag_name)
-                db.add(tag)
-                db.commit()
-                db.refresh(tag)
-            photo_tag = PhotoTag(photo_id=new_photo.id, tag_id=tag.id)
-            db.add(photo_tag)
-    db.commit()
+    if tags:
+        for tag_name in set(tags):
+            tag_name = tag_name.strip().lower()
+            if tag_name:
+                tag = db.query(Tag).filter(Tag.tag_name == tag_name).first()
+                if not tag:
+                    tag = Tag(tag_name=tag_name)
+                    db.add(tag)
+                    db.commit()
+                    db.refresh(tag)
+                photo_tag = PhotoTag(photo_id=new_photo.id, tag_id=tag.id)
+                db.add(photo_tag)
+        db.commit()
     db.refresh(new_photo)
     return PhotoOut.model_validate(new_photo)
 

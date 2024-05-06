@@ -216,7 +216,7 @@ class PhotoOut(BaseModel):
     file_path: str
     qr_path: str
     description: str
-    tags: list[TagOut]
+    tags: list[TagOut] = []
     transformation: Dict[str, list] | None = None
     upload_date: datetime
     user_id: int

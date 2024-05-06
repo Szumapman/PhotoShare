@@ -72,23 +72,19 @@ async def upload_photo(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Description cannot be an empty string",
         )
-    tags = tags[0].split(",")
-    if len(tags) > 5:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Too many tags provided. You can use max of 5 tags.",
-        )
-    for tag in tags:
-        if len(tag) > MAX_TAG_NAME_LENGTH:
+    if tags:
+        tags = tags[0].split(",")
+        if len(tags) > 5:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Tag name must be less than {MAX_TAG_NAME_LENGTH} characters.",
+                detail=f"Too many tags provided. You can use max of 5 tags.",
             )
-        if len(tag.strip()) == 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Tag name cannot be an empty string.",
-            )
+        for tag in tags:
+            if len(tag) > MAX_TAG_NAME_LENGTH:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Tag name must be less than {MAX_TAG_NAME_LENGTH} characters.",
+                )
     photo_url = await photos_services.upload_photo(file)
     qr_code_url = await photos_services.create_qr_code(photo_url)
     new_photo = await photos_repository.upload_photo(
