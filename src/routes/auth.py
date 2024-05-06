@@ -59,7 +59,7 @@ async def login(
     body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
     """
-    Handles the login process for a existing users.
+    Handles the login process for an existing users.
 
     Args:
         body (OAuth2PasswordRequestForm): The credentials used for authentication.
@@ -75,8 +75,8 @@ async def login(
     user = await repository_users.get_user_by_email(body.username, db)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with username:{body.username} not found",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email",
         )
     if not user.confirmed:
         raise HTTPException(
