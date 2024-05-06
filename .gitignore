@@ -24,8 +24,8 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.env-remonte
 .env
-.env_local
 postgres-data
 MANIFEST
 
@@ -115,7 +115,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+.env-remonte
 .venv
 env/
 venv/
@@ -160,4 +160,4 @@ postgres-data/
 #Test database
 tests/test.db
 test.db
-.env_local
+.env
