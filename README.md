@@ -50,23 +50,27 @@ Główne cele PhotoShare obejmują:
 Upewnij się, że na Twoim komputerze zainstalowany jest Python 3.11 lub nowszy.
 
 Aplikacja korzysta z następujących bibliotek:
-- `uvicorn`
-- `fastapi`
-- `redis`
-- `python-dotenv`
-- `SQLAlchemy`
-- `cloudinary`
-- `passlib`
-- `pydantic`
-- `libgravatar`
-- `alembic`
-- `pydantic[email]`
-- `python-multipart`
-- `python-jose[cryptography]`
-- `passlib[bcrypt]`
-- `fastapi-mail`
-- `bcrypt`
-- `grcode[pil]`
+- `sqlalchemy = "*"`
+- `fastapi = "*"`
+- `uvicorn = "*"`
+- `pydantic-settings = "*"`
+- `cloudinary = "*"`
+- `fastapi-jwt-auth = "*"`
+- `python-jose = "*"`
+- `passlib = "*"`
+- `redis = "*"`
+- `python-multipart = "*"`
+- `libgravatar = "*"`
+- `alembic = "*"`
+- `psycopg2 = "*"`
+- `fastapi-mail = "*"`
+- `fastapi-limiter = "*"`
+- `bcrypt = "*"`
+- `typing-extensions = "*"`
+- `pytest = "*"`
+- `pydantic = "*"`
+- `httpx = "*"`
+- `pytest-asyncio = "*"`
 - `psycopg2-binary = "*"`
 
 
@@ -81,9 +85,18 @@ cd PhotoShare
 ```
 
 ### 3. Instalacja zależności:
-Wykorzystaj poniższą komendę do zainstalowania niezbędnych zależności, najlepiej w oddzielnym środowisku.
+Zależności można zainatslować wykorzystując m.in pipenv.
+Jeśli jeszcze nie masz zainstalowanego Pipenv, możesz to zrobić przy użyciu pip wykorzystając w tym celu poniższą komendę:
 
-```pip install -r requirements.txt```
+```pip install pipenv```
+
+W kolejnym koroku aktywuj środowisko wirtualne (opcjonalnie) za pomocą komendy:
+
+```pipenv shell```
+
+Gdy jesteś w katalogu projektu i najlepiej z aktywowanym środowiskiem wirtualnym, możesz zainstalować pakiety wymienione w pliku Pipfile za pomocą następującego polecenia:
+
+```pipenv install```
 
 ### 4. Konfiguracja środowiska:
 
@@ -91,32 +104,39 @@ Wykorzystaj poniższą komendę do zainstalowania niezbędnych zależności, naj
 Utwórz plik `.env` w głównym katalogu i podaj niezbędne zmienne środowiskowe zgodnie z przykładowym plikiem `env`.
 
 #### _Docker Compose_
+
 Przed uruchomieniem aplikacji lokalnie upewnij się, że masz zainstalowany **Docker Compose**.
 Uruchom poniższe polecenie w terminalu, aby zbudować i uruchomić kontenery:
 ```
 docker-compose up -d 
 ```
 #### _Baza danych PostgreSQL_
+
 Po uruchomieniu kontenerów Docker Compose, aplikacja automatycznie utworzy bazę danych PostgreSQL.
 
 #### _Migracje Alembic_
+
 Po uruchomieniu kontenerów Docker Compose wykonaj migracje Alembic, aby zastosować schemat bazy danych:
 ```
 alembic upgrade head
 ```
 
 #### _Redis_
+
 Redis jest używany do przechowywania danych podręcznych. Kontener Redis jest automatycznie uruchamiany wraz z innymi kontenerami Docker Compose.
 
 
 
 ## Uruchomienie aplikacji:
+
 Po skonfigurowaniu środowiska uruchom aplikację lokalnie za pomocą następującej komendy:
 
 ```
 uvicorn main:app --reload
 ```
+
 Ta komenda uruchomi serwer FastAPI lokalnie. Domyślnie serwer będzie działał pod adresem http://127.0.0.1:8000.
+
 
 ## Instrukcja generowania dokumentacji Sphinx
 
@@ -225,6 +245,7 @@ Jeśli masz pytania, sugestie lub chciałbyś się skontaktować w sprawie aplik
 - [Configuration](#Configuration)
 - [Installation](#installation)
 - [Running the application](#running-the-application)
+- [Sphinx Documentation Generation Guide](Sphinx-Documentation-Generation-Guide)
 - [API Documentation](#API-documentation)
 - [Features](#features)
 - [Usage example](Usage-example)
@@ -252,26 +273,31 @@ The main goals of PhotoShare include:
 ## Configuration
 Make sure Python 3.11 or later is installed on your computer.
 
-The application uses the following libraries:
+The application uses the following packages:
 
-- `uvicorn`
-- `fastapi`
-- `redis`
-- `python-dotenv`
-- `SQLAlchemy`
-- `cloudinary`
-- `passlib`
-- `pydantic`
-- `libgravatar`
-- `alembic`
-- `pydantic[email]`
-- `python-multipart`
-- `python-jose[cryptography]`
-- `passlib[bcrypt]`
-- `fastapi-mail`
-- `bcrypt`
-- `grcode[pil]`
+- `sqlalchemy = "*"`
+- `fastapi = "*"`
+- `uvicorn = "*"`
+- `pydantic-settings = "*"`
+- `cloudinary = "*"`
+- `fastapi-jwt-auth = "*"`
+- `python-jose = "*"`
+- `passlib = "*"`
+- `redis = "*"`
+- `python-multipart = "*"`
+- `libgravatar = "*"`
+- `alembic = "*"`
+- `psycopg2 = "*"`
+- `fastapi-mail = "*"`
+- `fastapi-limiter = "*"`
+- `bcrypt = "*"`
+- `typing-extensions = "*"`
+- `pytest = "*"`
+- `pydantic = "*"`
+- `httpx = "*"`
+- `pytest-asyncio = "*"`
 - `psycopg2-binary = "*"`
+
 
 ## Installation
 ### 1. Clone the Repository:
@@ -287,9 +313,18 @@ cd PhotoShare
 ```
 
 ### 3. Install Dependencies:
-Use the following command to install the necessary dependencies, preferably in a separate environment.
 
-```pip install -r requirements.txt```
+Dependencies can be installed using tools like pipenv. If you haven't installed Pipenv yet, you can do so using pip by executing the following command:
+
+```pip install pipenv```
+
+In the next step, activate the virtual environment (optionally) using the command:
+
+```pipenv shell```
+
+Once you're in the project directory, preferably with the virtual environment activated, you can install the packages listed in the Pipfile using the following command:
+
+```pipenv install```
 
 ### 4. Configure the Environment:
 
@@ -323,6 +358,54 @@ After configuring the environment, run the application locally using the followi
 uvicorn main:app --reload
 ```
 This command will start the FastAPI server locally. By default, the server will run at http://127.0.0.1:8000.
+
+
+## Sphinx Documentation Generation Guide
+
+Sphinx to narzędzie do generowania dokumentacji w języku Python.
+
+## Instalacja Sphinx
+
+Sphinx is a tool used to generate documentation in Python.
+
+```
+pip install sphinx
+```
+
+### Generating Documentation
+
+1. Navigate to the main project directory:
+
+```
+cd PhotoShare
+```
+
+2. Initiate Sphinx, which will generate basic configuration files and directory structure. You can do this by executing the following command:
+
+```
+sphinx-quickstart <directory_name>
+```
+
+3. Follow the on-screen instructions to configure Sphinx. When prompted with `Separate source and build directories (y/n) [n]:`, type `n` or press `Enter`.
+4. After initialization, replace the files in the newly created directory with files from the `docs` directory:
+- `Makefile`
+- `conf.py`
+- `index.rst`
+- `make.bat`
+
+5. Navigate to the created directory in the terminal and set it as the current directory:
+
+```
+cd <directory_name>
+```
+
+6. After completing these steps, generate the documentation by executing the command:
+
+```
+.\make.bat html
+```
+
+After completing the above steps, the documentation project will be available in the `docs/_build/html` folder. The entry point to the documentation is located at `docs/_build/html/index.html`. Upon opening it, you should see the Sphinx documentation.
 
 
 ## API Documentation
