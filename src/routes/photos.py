@@ -13,8 +13,15 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.database.models import User
-from src.schemas import PhotoOut, UserOut, TransformationParameters, PhotoSearchOut
+from src.database.models import User, Photo
+from src.schemas import (
+    PhotoOut,
+    UserOut,
+    TransformationParameters,
+    PhotoSearchOut,
+    RatingIn,
+    RatingOut,
+)
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository
 from src.services import photos as photos_services
@@ -31,7 +38,6 @@ router = APIRouter(prefix="/photos", tags=["photos"])
     "/",
     response_model=PhotoOut,
     status_code=status.HTTP_201_CREATED,
-    summary="Photo uploaded successfully",
 )
 async def upload_photo(
     file: UploadFile = File(),
@@ -54,12 +60,17 @@ async def upload_photo(
           PhotoOut: The uploaded photo.
 
     Raises:
-          HTTPException: If the description or tag_name are too long, or if you try to add to many tags.
+          HTTPException: If the description or tag_name are too long or empty, or if you try to add to many tags.
     """
     if len(description) > MAX_DESCRIPTION_LENGTH:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Description must be less than {MAX_DESCRIPTION_LENGTH} characters",
+        )
+    if len(description.strip()) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Description cannot be an empty string",
         )
     tags = tags[0].split(",")
     if len(tags) > 5:
@@ -72,6 +83,11 @@ async def upload_photo(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Tag name must be less than {MAX_TAG_NAME_LENGTH} characters.",
+            )
+        if len(tag.strip()) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Tag name cannot be an empty string.",
             )
     photo_url = await photos_services.upload_photo(file)
     qr_code_url = await photos_services.create_qr_code(photo_url)
@@ -98,12 +114,7 @@ async def get_photo(
     Returns:
         PhotoOut: The photo matching the provided photo ID.
     """
-    photo = await photos_repository.get_photo_by_id(photo_id, db)
-    if not photo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
-        )
-    return photo
+    return await photos_repository.get_photo_by_id(photo_id, db)
 
 
 @router.get("/download/{photo_id}")
@@ -149,7 +160,20 @@ async def edit_photo_description(
 
     Returns:
         PhotoOut: The updated photo object
+
+    Raises:
+          HTTPException: If the description is too long or empty.
     """
+    if len(description) > MAX_DESCRIPTION_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Description must be less than {MAX_DESCRIPTION_LENGTH} characters",
+        )
+    if len(description.strip()) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Description cannot be an empty string",
+        )
     updated_photo = photos_repository.update_photo_description(
         photo_id, description, current_user, db
     )
@@ -212,7 +236,7 @@ async def transform_photo(
     Raises:
         HTTPException: If the specified photo is not found in the database or action is not performed by photo owner.
     """
-    photo = await photos_repository.get_photo_by_id(photo_id, db)
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
@@ -231,7 +255,7 @@ async def transform_photo(
     return photo
 
 
-@router.get("/{user_id}", response_model=list[PhotoOut])
+@router.get("/user/{user_id}", response_model=list[PhotoSearchOut])
 async def get_user_photos(
     user_id: int,
     current_user: User = Depends(auth_service.get_current_user),
@@ -242,8 +266,8 @@ async def get_user_photos(
 
     Args:
         user_id (int): The ID of the user whose photos are to be downloaded.
-        current_user (User, optional): Current authenticated user. Defaults to the user obtained from authentication service.
-        db (Session, optional): Database session dependency. Defaults to the database session obtained from dependency injection.
+        current_user (User, optional): Current authenticated user.
+        db (Session, optional): Database session dependency.
 
     Returns:
         list[PhotoOut]: The list of all photos uploaded by a specific user.
@@ -300,3 +324,25 @@ async def search_photos(
             detail="Query must be provided",
         )
     return await photos_repository.search_photos(query, sort_by, db)
+
+
+@router.post("/rate/{photo_id}", response_model=RatingOut)
+async def rate_photo(
+    photo_id: int,
+    rating_in: RatingIn,
+    current_user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Rate a photo.
+
+    Args:
+        photo_id (int): The ID of the photo to be rated.
+        rating_in (RatingIn): Rating of the photo.
+        current_user (User, optional): Current authenticated user.
+        db (Session, optional): Database session dependency.
+
+    Returns:
+        RatingOut: Rating of the photo.
+    """
+    return await photos_repository.rate_photo(photo_id, rating_in, current_user.id, db)

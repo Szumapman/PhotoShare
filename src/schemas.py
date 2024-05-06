@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict
+from typing import Dict
 
 from pydantic import BaseModel, Field, EmailStr, field_validator
 
@@ -208,6 +208,8 @@ class PhotoOut(BaseModel):
         transformation (Dict[str, str]): The transformation of the photo.
         description (str): The description of the photo.
         upload_date (datetime): The date the photo was uploaded.
+        user_id (int): photo owner ID.
+        average_rating (float): The average rating of the photo.
     """
 
     id: int
@@ -217,6 +219,8 @@ class PhotoOut(BaseModel):
     tags: list[TagOut]
     transformation: Dict[str, list] | None = None
     upload_date: datetime
+    user_id: int
+    average_rating: float | None = None
 
     class Config:
         from_attributes = True
@@ -233,6 +237,7 @@ class PhotoSearchOut(BaseModel):
         description (str): The description of the photo.
         tags (list[TagOut]): The tags of the photo.
         upload_date (datetime): The date the photo was uploaded.
+        average_rating (float): The average rating of the photo.
     """
 
     id: int
@@ -241,6 +246,20 @@ class PhotoSearchOut(BaseModel):
     description: str
     tags: list[TagOut]
     upload_date: datetime
+    average_rating: float | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class RatingIn(BaseModel):
+    score: int = Field(..., ge=1, le=5, description="The rating score from 1 to 5")
+
+
+class RatingOut(BaseModel):
+    photo_id: int
+    user_id: int
+    score: int
 
     class Config:
         from_attributes = True

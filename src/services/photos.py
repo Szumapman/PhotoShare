@@ -34,10 +34,8 @@ async def upload_photo(file: File) -> str:
 async def delete_from_cloudinary(photo: PhotoOut):
     photo_public_id = f"{CLOUDINARY_PARAMS['photo_public_id_prefix']}/{await _get_cloudinary_public_ip(photo.file_path)}"
     cloudinary.uploader.destroy(photo_public_id, invalidate=True)
-    print(f"Deleted {photo_public_id}")
     qrcode_public_id = f"{CLOUDINARY_PARAMS['qr_public_id_prefix']}/{await _get_cloudinary_public_ip(photo.qr_path)}"
     cloudinary.uploader.destroy(qrcode_public_id, invalidate=True)
-    print(f"Deleted {qrcode_public_id}")
 
 
 async def create_qr_code(photo_url: str) -> str:

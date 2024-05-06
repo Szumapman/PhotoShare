@@ -1,11 +1,11 @@
-from typing import List, Optional
+from typing import List, Optional, Type
 
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from src.database.models import Photo, Tag, PhotoTag, User
-from src.schemas import PhotoOut, UserOut, PhotoSearchOut
+from src.database.models import Photo, Tag, PhotoTag, User, Rating
+from src.schemas import PhotoOut, UserOut, PhotoSearchOut, RatingIn, RatingOut
 from src.conf.constant import PHOTO_SEARCH_ENUMS
 
 
@@ -53,18 +53,10 @@ async def upload_photo(
             db.add(photo_tag)
     db.commit()
     db.refresh(new_photo)
-    return PhotoOut(
-        id=new_photo.id,
-        file_path=new_photo.file_path,
-        qr_path=new_photo.qr_path,
-        transformation=new_photo.transformation,
-        description=new_photo.description,
-        tags=new_photo.tags,
-        upload_date=new_photo.upload_date,
-    )
+    return PhotoOut.model_validate(new_photo)
 
 
-async def get_photo_by_id(photo_id: int, db: Session) -> PhotoOut | None:
+async def get_photo_by_id(photo_id: int, db: Session) -> PhotoOut:
     """
     Get photo by id
 
@@ -73,17 +65,24 @@ async def get_photo_by_id(photo_id: int, db: Session) -> PhotoOut | None:
         db (Session): database session
 
     Returns:
-        PhotoOut | None: photo object or None if not found Photo with provided id
+        PhotoOut: photo object with provided id
+
+    Raises:
+        HTTPException: 404 Not Found if photo does not exist
     """
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
-        return None
-    return photo
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Photo not found",
+        )
+    photo_out = PhotoOut.model_validate(photo)
+    return photo_out
 
 
 def update_photo_description(
     photo_id: int, new_description: str, current_user: UserOut, db: Session
-):
+) -> PhotoOut:
     """
     Update photo description
 
@@ -109,10 +108,10 @@ def update_photo_description(
     photo.description = new_description
     db.commit()
     db.refresh(photo)
-    return photo
+    return PhotoOut.model_validate(photo)
 
 
-async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | None:
+async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut:
     """
     Delete a photo from the database if it belongs to the specified user or if the user is administrator.
 
@@ -136,7 +135,7 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
     if photo.user_id == user.id or user.role == "admin":
         db.delete(photo)
         db.commit()
-        return photo
+        return PhotoOut.model_validate(photo)
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Only owner of the photo or admin can delete it.",
@@ -144,7 +143,7 @@ async def delete_photo(photo_id: int, user: UserOut, db: Session) -> PhotoOut | 
 
 
 async def add_transformation(
-    photo: PhotoOut, transform_photo_url: str, params: list, db: Session
+    photo: Photo, transform_photo_url: str, params: list, db: Session
 ) -> PhotoOut:
     """
     Add a new transformation to the photo.
@@ -165,10 +164,10 @@ async def add_transformation(
     photo.transformation = transformations
     db.commit()
     db.refresh(photo)
-    return photo
+    return PhotoOut.model_validate(photo)
 
 
-async def get_user_photos(user_id: int, db: Session) -> list[PhotoOut]:
+async def get_user_photos(user_id: int, db: Session) -> list[PhotoSearchOut]:
     """
     Get the list of all photos uploaded by a specific user.
 
@@ -188,7 +187,7 @@ async def get_user_photos(user_id: int, db: Session) -> list[PhotoOut]:
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     photos = db.query(Photo).filter(Photo.user_id == user_id).all()
-    return photos
+    return [PhotoSearchOut.model_validate(photo) for photo in photos if photos]
 
 
 async def get_photos(db: Session) -> list[PhotoSearchOut]:
@@ -202,7 +201,7 @@ async def get_photos(db: Session) -> list[PhotoSearchOut]:
         list[PhotoOut]: List of photos.
     """
     photos = db.query(Photo).all()
-    return [PhotoSearchOut.from_orm(photo) for photo in photos if photos]
+    return [PhotoSearchOut.model_validate(photo) for photo in photos if photos]
 
 
 async def search_photos(
@@ -234,14 +233,54 @@ async def search_photos(
         )
     )
     field, sort = sort_by.split("-")
+    photos = []
     if field == "upload_date":
         query_base = query_base.order_by(
             Photo.upload_date.desc() if sort == "desc" else Photo.upload_date.asc()
         )
-    # add when rating ready
-    # elif field == "rating":
-    #     query_base = query_base.order_by(Photo.rating.desc() if sort == "desc" else Photo.reating.asc())
+        photos = query_base.all()
+    elif field == "rating":
+        photos = query_base.all()
+        photos.sort(key=lambda photo: photo.average_rating, reverse=(sort == "desc"))
+    return [PhotoSearchOut.model_validate(photo) for photo in photos if photos]
 
-    photos = query_base.all()
 
-    return [PhotoSearchOut.model_validate(Photo) for photo in photos if photos]
+async def rate_photo(
+    photo_id: int, rating_in: RatingIn, user_id: int, db: Session
+) -> RatingOut:
+    """
+    Set user rating for a photo.
+
+    Args:
+        photo_id (int): id of photo to rate.
+        rating_in (RatingIn): Rating to be set.
+        user_id (int): User who rated photo.
+        db (Session): Database session.
+
+    Returns:
+        RatingOut: Rating out of the photo.
+
+    Raises:
+         HTTPException: 404 NOT FOUND - If the photo does not exist.
+         HTTPException: 403 FORBIDDEN - If the photo is rated by its owner.
+    """
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    if not photo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Photo not found",
+        )
+    if photo.user_id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You cannot rate your own photo",
+        )
+    rating = db.query(Rating).filter_by(photo_id=photo_id, user_id=user_id).first()
+    if rating:
+        rating.score = rating_in.score
+    else:
+        rating = Rating(photo_id=photo_id, user_id=user_id, score=rating_in.score)
+        db.add(rating)
+    db.commit()
+    db.refresh(rating)
+    return RatingOut.model_validate(rating)
