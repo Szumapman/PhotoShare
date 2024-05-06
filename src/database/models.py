@@ -1,4 +1,15 @@
-from sqlalchemy import Column, Integer, String, func, Boolean, Enum, ForeignKey, JSON
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    func,
+    Boolean,
+    Enum,
+    ForeignKey,
+    JSON,
+    UniqueConstraint,
+)
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.orm import relationship, declarative_base
 from src.conf.constant import (
@@ -41,8 +52,9 @@ class User(Base):
     avatar = Column(String(255), nullable=True)
     refresh_token = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
-    photos = relationship("Photo", back_populates="user")
-    comments = relationship("Comment", back_populates="user")
+    photos = relationship("Photo", back_populates="user", cascade="all, delete")
+    comments = relationship("Comment", back_populates="user", cascade="all, delete")
+    ratings = relationship("Rating", back_populates="user", cascade="all, delete")
 
 
 class Photo(Base):
@@ -71,8 +83,23 @@ class Photo(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="photos")
-    comments = relationship("Comment", back_populates="photo")
-    tags = relationship("Tag", secondary="photo_tags", back_populates="photos")
+    comments = relationship(
+        "Comment", back_populates="photo", cascade="all, delete-orphan"
+    )
+    tags = relationship(
+        "Tag",
+        secondary="photo_tags",
+        back_populates="photos",
+    )
+    ratings = relationship(
+        "Rating", back_populates="photo", cascade="all, delete-orphan"
+    )
+
+    @hybrid_property
+    def average_rating(self):
+        if self.ratings:
+            return sum(rating.score for rating in self.ratings) / len(self.ratings)
+        return 0
 
 
 class Comment(Base):
@@ -118,7 +145,11 @@ class Tag(Base):
     id = Column(Integer, primary_key=True)
     tag_name = Column(String(MAX_TAG_NAME_LENGTH), nullable=False, unique=True)
 
-    photos = relationship("Photo", secondary="photo_tags", back_populates="tags")
+    photos = relationship(
+        "Photo",
+        secondary="photo_tags",
+        back_populates="tags",
+    )
 
 
 class PhotoTag(Base):
@@ -134,3 +165,28 @@ class PhotoTag(Base):
     __tablename__ = "photo_tags"
     photo_id = Column(Integer, ForeignKey("photos.id"), primary_key=True)
     tag_id = Column(Integer, ForeignKey("tags.id"), primary_key=True)
+
+
+class Rating(Base):
+    """
+    Represents a photo rating. Contains the rating of the photo added by a user.
+    :param id: Primary key.
+    :type id: int
+    :param photo_id: Foreign key to the photo, part of the primary key.
+    :type photo_id: int
+    :param user_id: Foreign key to the user, part of the primary key.
+    :type user_id: int
+    :param score: Required, the rating of the photo added by a user.
+    :type score: int
+    """
+
+    __tablename__ = "ratings"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    photo_id = Column(Integer, ForeignKey("photos.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    score = Column(Integer, nullable=False)
+
+    photo = relationship("Photo", back_populates="ratings")
+    user = relationship("User", back_populates="ratings")
+
+    __table_args__ = (UniqueConstraint("photo_id", "user_id", name="photo_user_uc"),)
