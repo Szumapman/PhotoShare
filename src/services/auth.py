@@ -11,6 +11,7 @@ import bcrypt
 
 from src.conf.config import settings
 from src.database.db import get_db
+from src.database.models import User
 from src.repository import users as repository_users
 from src.schemas import UserOut
 
@@ -47,7 +48,7 @@ class Auth:
         db=0,
     )
 
-    async def set_user_in_redis(self, email: str, user: UserOut):
+    async def set_user_in_redis(self, email: str, user: User):
         self.r.set(f"user:{email}", pickle.dumps(user))
         self.r.expire(f"user:{email}", 900)
 

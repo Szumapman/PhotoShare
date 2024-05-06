@@ -70,7 +70,7 @@ async def create_user(body: UserIn, db: Session) -> UserOut:
 async def update_token(user: User, token: str | None, db: Session) -> None:
     """
     Update the refresh token for a given user in the database.
-    
+
     Args:
         user (User): The user for whom the refresh token will be updated.
         token (str | None): The new refresh token. If None, the token will be removed.
@@ -212,7 +212,7 @@ async def set_user_is_active(user_id: int, is_active: bool, db: Session) -> User
             avatar=user.avatar,
             is_active=is_active,
         )
-        await auth_service.set_user_in_redis(user.email, user_out)
+        await auth_service.set_user_in_redis(user.email, user)
         return user_out
     else:
         raise HTTPException(
