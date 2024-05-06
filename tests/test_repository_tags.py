@@ -3,7 +3,7 @@ import unittest
 from fastapi import HTTPException, status
 
 from src.database.models import Base, User, Photo, Tag, PhotoTag
-from tests.db_test_config import engine, testing_session_local
+from tests.conftest import engine, testing_session_local
 from src.repository.tags import (
     get_tags,
     add_tag,
