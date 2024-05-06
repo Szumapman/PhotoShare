@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 .env
+.env_local
 postgres-data
 MANIFEST
 
@@ -159,3 +160,4 @@ postgres-data/
 #Test database
 tests/test.db
 test.db
+.env_local

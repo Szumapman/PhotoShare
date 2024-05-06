@@ -16,4 +16,4 @@ passlib[bcrypt]
 fastapi-mail
 cloudinary
 bcrypt~=4.1.2
-qrcode[pil]
+qrcode[pil
