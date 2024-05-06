@@ -93,9 +93,11 @@ Uruchom poniższe polecenie w terminalu, aby zbudować i uruchomić kontenery:
 ```
 docker-compose up -d 
 ```
-
 #### _Baza danych PostgreSQL_
 Po uruchomieniu kontenerów Docker Compose, aplikacja automatycznie utworzy bazę danych PostgreSQL.
+
+#### _Plik konfiguracyjny_
+Utwórz plik `.env` w głównym katalogu i podaj niezbędne zmienne środowiskowe zgodnie z przykładowym plikiem `env`.
 
 #### _Migracje Alembic_
 Po uruchomieniu kontenerów Docker Compose wykonaj migracje Alembic, aby zastosować schemat bazy danych:
@@ -106,8 +108,6 @@ alembic upgrade head
 #### _Redis_
 Redis jest używany do przechowywania danych podręcznych. Kontener Redis jest automatycznie uruchamiany wraz z innymi kontenerami Docker Compose.
 
-#### _Plik konfiguracyjny_
-Utwórz plik `.env` w głównym katalogu i podaj niezbędne zmienne środowiskowe zgodnie z przykładowym plikiem `env`.
 
 
 ## Uruchomienie aplikacji:
@@ -176,7 +176,7 @@ Dokumentacja API jest automatycznie generowana przez FastAPI i można uzyskać d
 - **Uwierzytelnianie użytkownika:** Użytkownicy mogą bezpiecznie rejestrować się, logować i wylogowywać się. Autoryzacja odbywa się za pomocą tokenów JWT.
 - **Przesyłanie zdjęć:** Użytkownicy mogą przesyłać zdjęcia na platformę Cloudinary.
 - **Transformacja zdjęć:** Użytkownicy mogą stosować różne transformacje do przesłanych zdjęć, takie jak zmiana rozmiaru, przycinanie i stosowanie efektów.
-- `**Oznaczanie:** Użytkownicy mogą oznaczać swoje zdjęcia opisowymi tagami, aby uczynić je bardziej widocznymi.
+- **Oznaczanie:** Użytkownicy mogą oznaczać swoje zdjęcia opisowymi tagami, aby uczynić je bardziej widocznymi.
 - **Komentowanie:** Użytkownicy mogą zostawiać komentarze pod zdjęciami.
 - **Administracja:** Administratorzy mają dostęp do dodatkowych funkcji, takich jak zarządzanie użytkownikami i moderowanie treści.
 
