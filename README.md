@@ -50,28 +50,25 @@ Główne cele PhotoShare obejmują:
 Upewnij się, że na Twoim komputerze zainstalowany jest Python 3.11 lub nowszy.
 
 Aplikacja korzysta z następujących bibliotek:
-- `sqlalchemy = "*"`
-- `fastapi = "*"`
-- `uvicorn = "*"`
-- `pydantic-settings = "*"`
-- `cloudinary = "*"`
-- `fastapi-jwt-auth = "*"`
-- `python-jose = "*"`
-- `passlib = "*"`
-- `redis = "*"`
-- `python-multipart = "*"`
-- `libgravatar = "*"`
-- `alembic = "*"`
-- `psycopg2 = "*"`
-- `fastapi-mail = "*"`
-- `fastapi-limiter = "*"`
-- `bcrypt = "*"`
-- `typing-extensions = "*"`
-- `pytest = "*"`
-- `pydantic = "*"`
-- `httpx = "*"`
-- `pytest-asyncio = "*"`
-- `psycopg2-binary = "*"`
+- `uvicorn~=0.29.0`
+- `fastapi~=0.110.2`
+- `redis~=5.0.4`
+- `python-dotenv~=1.0.1`
+- `SQLAlchemy~=2.0.29`
+- `cloudinary~=1.40.0`
+- `passlib`
+- `pydantic~=2.7.1`
+- `libgravatar~=1.0.4`
+- `alembic~=1.13.1`
+- `pydantic[email]`
+- `python-multipart`
+- `libgravatar`
+- `python-jose[cryptography]`
+- `passlib[bcrypt]`
+- `fastapi-mail`
+- `cloudinary`
+- `bcrypt~=4.1.2`
+- `qrcode[pil]`
 
 
 ## Instalacja
@@ -85,18 +82,10 @@ cd PhotoShare
 ```
 
 ### 3. Instalacja zależności:
-Zależności można zainatslować wykorzystując m.in pipenv.
-Jeśli jeszcze nie masz zainstalowanego Pipenv, możesz to zrobić przy użyciu pip wykorzystając w tym celu poniższą komendę:
 
-```pip install pipenv```
+```pip install -r requirements.txt```
 
-W kolejnym koroku aktywuj środowisko wirtualne (opcjonalnie) za pomocą komendy:
-
-```pipenv shell```
-
-Gdy jesteś w katalogu projektu i najlepiej z aktywowanym środowiskiem wirtualnym, możesz zainstalować pakiety wymienione w pliku Pipfile za pomocą następującego polecenia:
-
-```pipenv install```
+To polecenie instaluje wszystkie zależności wymagane przez projekt, korzystając z pliku **requirements.txt**.
 
 ### 4. Konfiguracja środowiska:
 
@@ -116,7 +105,7 @@ Po uruchomieniu kontenerów Docker Compose, aplikacja automatycznie utworzy baz�
 
 #### _Migracje Alembic_
 
-Po uruchomieniu kontenerów Docker Compose wykonaj migracje Alembic, aby zastosować schemat bazy danych:
+Przed uruchomieniem Alembica upewnij się, że baza danych jest skonfigurowana zgodnie z plikiem konfiguracyjnym, co umożliwi bezproblemowe przeprowadzenie migracji. Następnie po uruchomieniu kontenerów Docker Compose wykonaj migracje Alembic, aby skutecznie zaimplementować schemat bazy danych
 ```
 alembic upgrade head
 ```
@@ -275,28 +264,25 @@ Make sure Python 3.11 or later is installed on your computer.
 
 The application uses the following packages:
 
-- `sqlalchemy = "*"`
-- `fastapi = "*"`
-- `uvicorn = "*"`
-- `pydantic-settings = "*"`
-- `cloudinary = "*"`
-- `fastapi-jwt-auth = "*"`
-- `python-jose = "*"`
-- `passlib = "*"`
-- `redis = "*"`
-- `python-multipart = "*"`
-- `libgravatar = "*"`
-- `alembic = "*"`
-- `psycopg2 = "*"`
-- `fastapi-mail = "*"`
-- `fastapi-limiter = "*"`
-- `bcrypt = "*"`
-- `typing-extensions = "*"`
-- `pytest = "*"`
-- `pydantic = "*"`
-- `httpx = "*"`
-- `pytest-asyncio = "*"`
-- `psycopg2-binary = "*"`
+- `uvicorn~=0.29.0`
+- `fastapi~=0.110.2`
+- `redis~=5.0.4`
+- `python-dotenv~=1.0.1`
+- `SQLAlchemy~=2.0.29`
+- `cloudinary~=1.40.0`
+- `passlib`
+- `pydantic~=2.7.1`
+- `libgravatar~=1.0.4`
+- `alembic~=1.13.1`
+- `pydantic[email]`
+- `python-multipart`
+- `libgravatar`
+- `python-jose[cryptography]`
+- `passlib[bcrypt]`
+- `fastapi-mail`
+- `cloudinary`
+- `bcrypt~=4.1.2`
+- `qrcode[pil]`
 
 
 ## Installation
@@ -314,17 +300,9 @@ cd PhotoShare
 
 ### 3. Install Dependencies:
 
-Dependencies can be installed using tools like pipenv. If you haven't installed Pipenv yet, you can do so using pip by executing the following command:
+```pip install -r requirements.txt```
 
-```pip install pipenv```
-
-In the next step, activate the virtual environment (optionally) using the command:
-
-```pipenv shell```
-
-Once you're in the project directory, preferably with the virtual environment activated, you can install the packages listed in the Pipfile using the following command:
-
-```pipenv install```
+This command installs all dependencies required by the project using the **requirements.txt file**.
 
 ### 4. Configure the Environment:
 
@@ -343,8 +321,9 @@ docker-compose up -d
 #### _PostgreSQL Database_
 After starting the Docker Compose containers, the application will automatically create the PostgreSQL database.
 
-#### _Migracje Alembic_
-After starting the Docker Compose containers, perform Alembic migrations to apply the database schema:
+#### _Migrations Alembic_
+
+Before initiating Alembic, ensure the database is configured according to the configuration file, enabling seamless application of migrations. Subsequently, upon launching Docker Compose containers, execute Alembic migrations to implement the database schema effectively.
 ```
 alembic upgrade head
 ```
