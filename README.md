@@ -18,7 +18,7 @@
 - [Wymagane zależności](#wymagane-zależności)
 - [Instalacja](#instalacja)
 - [Uruchomienie aplikacji](#uruchomienie-aplikacji)
-- [Instrukcja generowania dokumentacja Sphinx](Instrukcja-generowania-dokumentacja-Sphinx)
+- [Instrukcja generowania dokumentacji Sphinx](Instrukcja-generowania-dokumentacji-Sphinx)
 - [Dokumentacja API](#dokumentacja-API)
 - [Funkcje](#funkcje)
 - [Przykład użycia](Przykład-użycia)
@@ -118,7 +118,7 @@ uvicorn main:app --reload
 ```
 Ta komenda uruchomi serwer FastAPI lokalnie. Domyślnie serwer będzie działał pod adresem http://127.0.0.1:8000.
 
-## Instrukcja generowania dokumentacja Sphinx
+## Instrukcja generowania dokumentacji Sphinx
 
 Sphinx to narzędzie do generowania dokumentacji w języku Python.
 
@@ -181,8 +181,10 @@ Dokumentacja API jest automatycznie generowana przez FastAPI i można uzyskać d
 - **Administracja:** Administratorzy mają dostęp do dodatkowych funkcji, takich jak zarządzanie użytkownikami i moderowanie treści.
 
 
->## Przykład użycia
+## Przykład użycia
+
 >### _Wczytywanie zdjęcia z opisem i tagami_
+> 
 ### Autoryzacja użytkownika
 <img src="images/0.jpg">
 
