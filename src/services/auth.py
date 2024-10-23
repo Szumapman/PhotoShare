@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from redis import Redis
+from redis.asyncio import Redis
 import bcrypt
 
 from src.conf.config import settings
@@ -49,8 +49,8 @@ class Auth:
     )
 
     async def set_user_in_redis(self, email: str, user: User):
-        self.r.set(f"user:{email}", pickle.dumps(user))
-        self.r.expire(f"user:{email}", 900)
+        await self.r.set(f"user:{email}", pickle.dumps(user))
+        await self.r.expire(f"user:{email}", 900)
 
     def verify_password(self, plain_password, hashed_password):
         """Verify if the plain password matches the hashed password."""
@@ -128,7 +128,6 @@ class Auth:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User is baned",
         )
-
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload["scope"] == "access_token":
@@ -139,7 +138,7 @@ class Auth:
                 raise credentials_exception
         except JWTError as e:
             raise credentials_exception
-        user = self.r.get(f"user:{email}")
+        user = await self.r.get(f"user:{email}")
         if user is None:
             user = await repository_users.get_user_by_email(email, db)
             if user is None:

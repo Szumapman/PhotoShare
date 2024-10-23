@@ -44,11 +44,11 @@ class User(Base):
     username = Column(String(MAX_USERNAME_LENGTH), nullable=False, unique=True)
     email = Column(String, unique=True, index=True, nullable=False)
     confirmed = Column(Boolean, default=False)
+    password = Column(String(255), nullable=False)
     role = Column(
         Enum("admin", "moderator", "standard", name="user_roles"), nullable=False
     )
-    password = Column(String(255), nullable=False)
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default=  func.now())
     avatar = Column(String(255), nullable=True)
     refresh_token = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)

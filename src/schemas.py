@@ -63,10 +63,18 @@ class UserOut(BaseModel):
     email: EmailStr
     role: UserRoleValid
     avatar: str = "default_avatar.jpg"
-    is_active: bool = True
+    is_active: bool
 
     class Config:
         from_attributes = True
+
+
+# class UserRedis(BaseModel):
+#     id: int
+#     username: str
+#     email: EmailStr
+#     role: UserRoleValid
+#     avatar: str = "default_avatar.jpg"
 
 
 class TokenModel(BaseModel):

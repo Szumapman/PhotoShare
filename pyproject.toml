@@ -23,6 +23,7 @@ fastapi-mail = "^1.4.1"
 cloudinary = "^1.40.0"
 bcrypt = "^4.1.2"
 qrcode = {extras = ["pil"], version = "^7.4.2"}
+fastapi-limiter = "^0.1.6"
 
 
 [tool.poetry.group.dev.dependencies]

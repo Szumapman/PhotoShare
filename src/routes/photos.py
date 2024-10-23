@@ -21,6 +21,7 @@ from src.schemas import (
     PhotoSearchOut,
     RatingIn,
     RatingOut,
+    TagIn,
 )
 from src.services.auth import auth_service
 from src.repository import photos as photos_repository

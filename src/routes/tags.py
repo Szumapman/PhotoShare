@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Form
 from sqlalchemy.orm import Session
 
-from src.schemas import TagOut, UserOut
+from src.schemas import TagIn, TagOut, UserOut
 from src.services.auth import auth_service
 from src.repository import tags as tags_repository
 from src.database.db import get_db
@@ -34,7 +34,7 @@ async def get_tags(
 @router.post("/{photo_id}", response_model=list[TagOut])
 async def add_tag(
     photo_id: int,
-    tag_name: str,
+    tag_name: TagIn = Form(),
     current_user: UserOut = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
